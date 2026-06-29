@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "id": "mqzbd5ge2w20",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-06-29",
+    "hora": "10:18",
+    "horaOut": null,
+    "strike": 735,
+    "delta": 0.45,
+    "prima": 1.5,
+    "contratos": 1,
+    "iv": null,
+    "score": 5,
+    "notas": "Paper money RSI marco call EMA 20",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
+  }
+]
