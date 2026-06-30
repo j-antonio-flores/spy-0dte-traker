@@ -16,5 +16,23 @@
     "estado": "ganancia",
     "primaOut": 2.03,
     "pnl": 53
+  },
+  {
+    "id": "mr0w8oofzgq0",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-06-30",
+    "hora": "10:18",
+    "horaOut": null,
+    "strike": 744,
+    "delta": 0.46,
+    "prima": 1.35,
+    "contratos": 1,
+    "iv": null,
+    "score": 5,
+    "notas": "Las lines de las EMA > menor que precio, muestrando una tendencia alcista en la linea de los EMA precio por arriba de los EMA's",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
