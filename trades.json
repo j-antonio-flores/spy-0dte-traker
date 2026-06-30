@@ -23,7 +23,7 @@
     "tipo": "CALL",
     "fecha": "2026-06-30",
     "hora": "10:18",
-    "horaOut": null,
+    "horaOut": "",
     "strike": 744,
     "delta": 0.46,
     "prima": 1.35,
@@ -31,8 +31,8 @@
     "iv": null,
     "score": 5,
     "notas": "Las lines de las EMA > menor que precio, muestrando una tendencia alcista en la linea de los EMA precio por arriba de los EMA's",
-    "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "estado": "ganancia",
+    "primaOut": 1.76,
+    "pnl": 41
   }
 ]
