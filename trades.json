@@ -52,5 +52,23 @@
     "estado": "ganancia",
     "primaOut": 1.37,
     "pnl": 39
+  },
+  {
+    "id": "mr3qsebqe80u",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-02",
+    "hora": "10:31",
+    "horaOut": "12:31",
+    "strike": 749,
+    "delta": 0.46,
+    "prima": 1.65,
+    "contratos": 1,
+    "iv": null,
+    "score": 5,
+    "notas": "EMA 20 >",
+    "estado": "perdida",
+    "primaOut": 1.12,
+    "pnl": -53
   }
 ]
