@@ -95,7 +95,7 @@
     "tipo": "PUT",
     "fecha": "2026-07-08",
     "hora": "10:31",
-    "horaOut": null,
+    "horaOut": "",
     "strike": 743,
     "delta": 0.47,
     "prima": 1.75,
@@ -103,8 +103,8 @@
     "iv": null,
     "score": 2,
     "notas": "EMA 9 < EMA 21 tendecia a la baja en grafiuca de 15 mins, con tres velas completadas con perdida, RSI no cumplio, se require",
-    "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "estado": "ganancia",
+    "primaOut": 2.28,
+    "pnl": 53
   }
 ]
