@@ -88,5 +88,23 @@
     "estado": "ganancia",
     "primaOut": 2.13,
     "pnl": 51
+  },
+  {
+    "id": "mrc6o2gf6k6k",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-07-08",
+    "hora": "10:31",
+    "horaOut": null,
+    "strike": 743,
+    "delta": 0.47,
+    "prima": 1.75,
+    "contratos": 1,
+    "iv": null,
+    "score": 2,
+    "notas": "EMA 9 < EMA 21 tendecia a la baja en grafiuca de 15 mins, con tres velas completadas con perdida, RSI no cumplio, se require",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
