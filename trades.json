@@ -113,7 +113,7 @@
     "tipo": "PUT",
     "fecha": "2026-07-09",
     "hora": "10:35",
-    "horaOut": null,
+    "horaOut": "",
     "strike": 746,
     "delta": 0.48,
     "prima": 1.45,
@@ -121,8 +121,8 @@
     "iv": null,
     "score": 5,
     "notas": "En timneframe de 1 minuto mostraba tendecia a la baja",
-    "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "estado": "perdida",
+    "primaOut": 1,
+    "pnl": -45
   }
 ]
