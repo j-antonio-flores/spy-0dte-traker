@@ -185,8 +185,16 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
 
     <!-- Reloj de sesión 0DTE -->
     <div class="clock-widget">
-      <div class="clock-session">SESIÓN ET</div>
-      <div class="clock-time" id="clock-time">--:--:--</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div class="clock-session">ET (Nueva York)</div>
+          <div class="clock-time" id="clock-time">--:--:--</div>
+        </div>
+        <div style="text-align:right">
+          <div class="clock-session">CT (México)</div>
+          <div class="clock-time" id="clock-time-ct" style="font-size:15px;color:var(--muted)">--:--:--</div>
+        </div>
+      </div>
       <div class="clock-status" id="clock-status" style="color:var(--muted)">Calculando...</div>
       <div class="clock-bar"><div class="clock-fill" id="clock-fill" style="width:0%;background:var(--accent)"></div></div>
       <div class="clock-countdown" id="clock-countdown"></div>
@@ -272,16 +280,17 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
             <div>
               <div class="metric-row"><span class="metric-row-label">Capital</span><span class="metric-row-val">$2,800</span></div>
               <div class="metric-row"><span class="metric-row-label">Riesgo/trade</span><span class="metric-row-val accent">$140 (5%)</span></div>
-              <div class="metric-row"><span class="metric-row-label">Stop Loss</span><span class="metric-row-val red">50%</span></div>
-              <div class="metric-row"><span class="metric-row-label">Take Profit</span><span class="metric-row-val green">80%</span></div>
-              <div class="metric-row"><span class="metric-row-label">Ratio R:R</span><span class="metric-row-val green">1 : 1.6</span></div>
-              <div class="metric-row"><span class="metric-row-label">Win rate mínimo</span><span class="metric-row-val amber">> 38%</span></div>
+              <div class="metric-row"><span class="metric-row-label">Stop Loss</span><span class="metric-row-val red">30%</span></div>
+              <div class="metric-row"><span class="metric-row-label">Take Profit</span><span class="metric-row-val green">30%</span></div>
+              <div class="metric-row"><span class="metric-row-label">Ratio R:R</span><span class="metric-row-val amber">1 : 1</span></div>
+              <div class="metric-row"><span class="metric-row-label">Win rate mínimo</span><span class="metric-row-val amber">> 50%</span></div>
+              <div class="metric-row"><span class="metric-row-label">Win rate actual</span><span class="metric-row-val green">75% (8 trades)</span></div>
               <div class="metric-row"><span class="metric-row-label">Ventana entrada</span><span class="metric-row-val accent">9:45–11:30 AM ET</span></div>
               <div class="metric-row"><span class="metric-row-label">Cierre forzado</span><span class="metric-row-val red">3:45 PM ET</span></div>
-              <div class="metric-row"><span class="metric-row-label">Delta objetivo</span><span class="metric-row-val accent">0.45–0.60</span></div>
-              <div class="metric-row"><span class="metric-row-label">Prima SPY rango</span><span class="metric-row-val accent">$0.15–$0.50</span></div>
-              <div class="metric-row"><span class="metric-row-label">Prima óptima SPY</span><span class="metric-row-val accent">$0.20–$0.35</span></div>
-              <div class="metric-row"><span class="metric-row-label">Contratos típicos</span><span class="metric-row-val">3–5 según prima</span></div>
+              <div class="metric-row"><span class="metric-row-label">Delta objetivo</span><span class="metric-row-val accent">0.45–0.50</span></div>
+              <div class="metric-row"><span class="metric-row-label">Prima SPY rango</span><span class="metric-row-val accent">$0.90–$1.79</span></div>
+              <div class="metric-row"><span class="metric-row-label">Prima media real</span><span class="metric-row-val accent">$1.45 (8 trades)</span></div>
+              <div class="metric-row"><span class="metric-row-label">Contratos</span><span class="metric-row-val">1 (prima ~$1.45)</span></div>
               <div class="metric-row"><span class="metric-row-label">Strikes SPY</span><span class="metric-row-val">intervalos de $1</span></div>
               <div class="metric-row"><span class="metric-row-label">BB Width umbral</span><span class="metric-row-val accent">< 3.5% SPY</span></div>
               <div class="metric-row"><span class="metric-row-label">VWAP</span><span class="metric-row-val accent">Confirmación C1</span></div>
@@ -324,18 +333,18 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                 <input class="form-control" id="f-strike" type="number" placeholder="560" step="1">
               </div>
               <div>
-                <label class="form-label">Delta (0.45–0.60 SPY)</label>
-                <input class="form-control" id="f-delta" type="number" placeholder="0.50" step="0.01" min="0.10" max="0.95">
+                <label class="form-label">Delta (0.45–0.50 SPY)</label>
+                <input class="form-control" id="f-delta" type="number" placeholder="0.46" step="0.01" min="0.10" max="0.95">
               </div>
             </div>
             <div class="form-row g2">
               <div>
-                <label class="form-label">Prima entrada ($0.15–$0.50 SPY)</label>
-                <input class="form-control" id="f-prima" type="number" placeholder="0.25" step="0.05" oninput="calcOCOInline()">
+                <label class="form-label">Prima entrada ($0.90–$1.79 SPY)</label>
+                <input class="form-control" id="f-prima" type="number" placeholder="1.45" step="0.05" oninput="calcOCOInline()">
               </div>
               <div>
-                <label class="form-label">Contratos (3–5 típico SPY)</label>
-                <input class="form-control" id="f-contratos" type="number" placeholder="3" min="1" max="50" value="3" oninput="calcOCOInline()">
+                <label class="form-label">Contratos (1 con prima ~$1.45)</label>
+                <input class="form-control" id="f-contratos" type="number" placeholder="1" min="1" max="50" value="1" oninput="calcOCOInline()">
               </div>
             </div>
             <div class="form-row g2">
@@ -552,38 +561,38 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
         <div class="grid g2" style="align-items:flex-start">
           <div>
             <div class="card" style="margin-bottom:14px">
-              <div class="card-title">Calculadora OCO 0DTE</div>
+              <div class="card-title">Calculadora OCO SPY 0DTE</div>
               <div class="form-row">
-                <label class="form-label">Prima de entrada ($)</label>
-                <input class="form-control" id="calc-prima" type="number" placeholder="0.25" step="0.05" value="0.25" oninput="updateCalc()">
+                <label class="form-label">Prima de entrada ($0.90–$1.79 SPY)</label>
+                <input class="form-control" id="calc-prima" type="number" placeholder="1.45" step="0.05" value="1.45" oninput="updateCalc()">
               </div>
               <div class="form-row">
                 <label class="form-label">Contratos</label>
-                <input class="form-control" id="calc-contratos" type="number" placeholder="3" min="1" max="50" value="3" oninput="updateCalc()">
+                <input class="form-control" id="calc-contratos" type="number" placeholder="1" min="1" max="50" value="1" oninput="updateCalc()">
               </div>
               <div class="form-row">
-                <label class="form-label">Stop loss (%): <span id="calc-sl-val">50%</span></label>
-                <input type="range" id="calc-sl" min="10" max="70" value="50" oninput="document.getElementById('calc-sl-val').textContent=this.value+'%';updateCalc()">
+                <label class="form-label">Stop loss (%): <span id="calc-sl-val">30%</span></label>
+                <input type="range" id="calc-sl" min="10" max="70" value="30" oninput="document.getElementById('calc-sl-val').textContent=this.value+'%';updateCalc()">
               </div>
               <div class="form-row">
-                <label class="form-label">Take profit (%): <span id="calc-tp-val">80%</span></label>
-                <input type="range" id="calc-tp" min="10" max="150" value="80" oninput="document.getElementById('calc-tp-val').textContent=this.value+'%';updateCalc()">
+                <label class="form-label">Take profit (%): <span id="calc-tp-val">30%</span></label>
+                <input type="range" id="calc-tp" min="10" max="150" value="30" oninput="document.getElementById('calc-tp-val').textContent=this.value+'%';updateCalc()">
               </div>
               <div id="calc-oco-out"></div>
             </div>
 
             <div class="card">
-              <div class="card-title">Filtro delta 0DTE</div>
+              <div class="card-title">Filtro delta SPY 0DTE</div>
               <div style="margin-bottom:12px">
-                <label class="form-label">Delta: <span id="delta-num">0.50</span></label>
-                <input type="range" id="delta-range" min="10" max="80" value="50" oninput="updateDeltaViz(this.value)">
+                <label class="form-label">Delta: <span id="delta-num">0.46</span></label>
+                <input type="range" id="delta-range" min="10" max="80" value="46" oninput="updateDeltaViz(this.value)">
               </div>
               <div style="position:relative;height:6px;background:var(--bg4);border-radius:3px;margin:12px 0">
-                <div style="position:absolute;height:100%;left:43%;width:21%;background:rgba(200,240,96,.25);border-radius:3px"></div>
+                <div style="position:absolute;height:100%;left:47%;width:6%;background:rgba(200,240,96,.25);border-radius:3px"></div>
                 <div id="delta-cur" style="position:absolute;width:14px;height:14px;background:var(--accent);border-radius:50%;top:-4px;left:50%;transform:translateX(-7px);transition:left .2s;box-shadow:0 0 10px rgba(200,240,96,.5)"></div>
               </div>
               <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px">
-                <span>0.10 OTM</span><span style="color:var(--accent)">0.45–0.60 ✓</span><span>0.80 ITM</span>
+                <span>0.10 OTM</span><span style="color:var(--accent)">0.45–0.50 ✓</span><span>0.80 ITM</span>
               </div>
               <div id="delta-info" style="margin-top:14px"></div>
             </div>
@@ -599,7 +608,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
               <div class="card-title">OCO en Thinkorswim — 0DTE</div>
               <div style="font-size:12.5px;line-height:2;color:var(--muted)">
                 <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="badge badge-dim">1</span><span style="color:var(--text)">Abre cadena opciones SPY en Schwab/ToS → filtrar por expiración <strong>HOY</strong></span></div>
-                <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="badge badge-dim">2</span><span style="color:var(--text)">Busca strike de <strong>$1 step</strong> con delta <strong>0.45–0.60</strong> → right-click</span></div>
+                <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="badge badge-dim">2</span><span style="color:var(--text)">Busca strike de <strong>$1 step</strong> con delta <strong>0.45–0.50</strong> → right-click</span></div>
                 <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="badge badge-dim">3</span><span style="color:var(--text)">Verifica spread bid/ask: debe ser <strong>&lt; $0.05</strong> en SPY</span></div>
                 <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="badge badge-dim">4</span><span style="color:var(--text)">Elige <em>Buy → OCO</em> del menú contextual</span></div>
                 <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="badge badge-dim">5</span><span style="color:var(--text)">Captura <strong style="color:var(--green)">TP</strong> como Limit (+80%) y <strong style="color:var(--red)">SL</strong> como Stop (-50%)</span></div>
@@ -730,12 +739,12 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
 ═══════════════════════════════════════════════════ */
 const BUDGET     = 2800;
 const RISK_PCT   = 0.05;
-const SL_DEFAULT = 0.50;
-const TP_DEFAULT = 0.80;
+const SL_DEFAULT = 0.30;   // 30% — dato real 8 trades
+const TP_DEFAULT = 0.30;   // 30% — dato real 8 trades. R:R 1:1, WR minimo 50%, actual 75%
 const BBW_UMBRAL = 3.5;
-const PRIMA_MIN  = 0.15;
-const PRIMA_MAX  = 0.50;
-const PRIMA_OPT  = 0.25;
+const PRIMA_MIN  = 0.90;   // rango real SPY 0DTE (8 trades)
+const PRIMA_MAX  = 1.79;   // rango real SPY 0DTE (8 trades)
+const PRIMA_OPT  = 1.45;   // media real SPY 0DTE (8 trades)
 const DIAS_CAUTELA = [1, 3, 5];
 
 // Ventana horaria 0DTE (en minutos desde medianoche ET)
@@ -848,42 +857,59 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 ═══════════════════════════════════════════════════ */
 function getETMinutes() {
   const now = new Date();
-  // Convertir a ET usando Intl
   const etStr = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
   const [h, m, s] = etStr.split(':').map(Number);
   return { mins: h * 60 + m, secs: s, h, m, s, str: etStr };
 }
 
+function getCTTime() {
+  const now = new Date();
+  // America/Mexico_City = Centro de México (CT) — cubre CDMX, GDL, MTY, Guadalajara
+  const ctStr = now.toLocaleString('en-US', { timeZone: 'America/Mexico_City', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+  const [h, m, s] = ctStr.split(':').map(Number);
+  return { h, m, s };
+}
+
 function updateClock() {
-  const et = getETMinutes();
+  const et  = getETMinutes();
+  const ct  = getCTTime();
+
   const timeEl   = document.getElementById('clock-time');
+  const timeCtEl = document.getElementById('clock-time-ct');
   const statusEl = document.getElementById('clock-status');
   const fillEl   = document.getElementById('clock-fill');
   const countEl  = document.getElementById('clock-countdown');
   const alertEl  = document.getElementById('alert-forzado');
 
+  // Hora ET
   const hh = String(et.h).padStart(2,'0');
   const mm = String(et.m).padStart(2,'0');
   const ss = String(et.s).padStart(2,'0');
   timeEl.textContent = `${hh}:${mm}:${ss}`;
 
+  // Hora CT (México Centro)
+  const ctHH = String(ct.h).padStart(2,'0');
+  const ctMM = String(ct.m).padStart(2,'0');
+  const ctSS = String(ct.s).padStart(2,'0');
+  if (timeCtEl) timeCtEl.textContent = `${ctHH}:${ctMM}:${ctSS}`;
+
   // Día de cautela SPY
   const diaSemana = new Date().toLocaleString('en-US', { timeZone:'America/New_York', weekday:'short' });
   const esCautela = ['Mon','Wed','Fri'].includes(diaSemana);
-  const diaLabel  = { Mon:'Lunes — cautela', Wed:'Miérc — riesgo FOMC', Fri:'Viernes — gamma alto' };
+  const diaLabel  = { Mon:'Lunes — cautela', Wed:'Mierc — FOMC', Fri:'Viernes — gamma' };
 
   let color, status, pct = 0, countdown = '';
 
   if (et.mins < VENTANA_OPEN) {
-    color  = 'var(--muted)';
-    status = '⚫ Antes apertura';
+    color    = 'var(--muted)';
+    status   = '⚫ Antes apertura';
     const rest = VENTANA_OPEN - et.mins;
     countdown = `Ventana abre en ${rest}m`;
     pct = 0;
     alertEl.style.display = 'none';
   } else if (et.mins <= VENTANA_CLOSE) {
     color  = esCautela ? 'var(--amber)' : 'var(--green)';
-    status = esCautela ? `⚠ VENTANA — ${diaLabel[diaSemana]||'cautela'}` : '🟢 VENTANA VÁLIDA SPY';
+    status = esCautela ? `⚠ VENTANA — ${diaLabel[diaSemana]||'cautela'}` : '🟢 VENTANA VALIDA SPY';
     pct = ((et.mins - VENTANA_OPEN) / (VENTANA_CLOSE - VENTANA_OPEN)) * 100;
     const rest = VENTANA_CLOSE - et.mins;
     countdown = `Cierra en ${rest}m`;
@@ -892,7 +918,7 @@ function updateClock() {
   } else if (et.mins < CIERRE_FORZADO) {
     color  = 'var(--red)';
     status = '🔴 ZONA MUERTA SPY';
-    pct = 100;
+    pct    = 100;
     const rest = CIERRE_FORZADO - et.mins;
     countdown = `Cierre forzado en ${rest}m`;
     fillEl.style.background = 'var(--red)';
@@ -900,14 +926,14 @@ function updateClock() {
   } else if (et.mins < MARKET_CLOSE) {
     color  = 'var(--red)';
     status = '⛔ CIERRE FORZADO SPY';
-    pct = 100;
-    countdown = 'Cerrar posición SPY AHORA';
+    pct    = 100;
+    countdown = 'Cerrar posicion SPY AHORA';
     fillEl.style.background = 'var(--red)';
     alertEl.style.display = 'block';
   } else {
     color  = 'var(--muted)';
     status = '⚫ Mercado cerrado';
-    pct = 0;
+    pct    = 0;
     countdown = '';
     alertEl.style.display = 'none';
   }
@@ -946,7 +972,7 @@ function navigate(page) {
   if (page === 'dashboard')   renderDashboard();
   if (page === 'historial')   renderHistorial();
   if (page === 'reportes')    renderReportes();
-  if (page === 'calculadora') { updateCalc(); updateDeltaViz(50); }
+  if (page === 'calculadora') { updateCalc(); updateDeltaViz(46); }
   if (page === 'nueva') {
     document.getElementById('f-fecha').value = today();
     // Pre-fill hora actual ET
@@ -1149,8 +1175,8 @@ function calcOCOInline() {
     <div style="background:var(--bg3);border-radius:var(--r);padding:12px">
       <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:8px">NIVELES OCO SPY 0DTE</div>
       <div class="oco-result">
-        <div class="oco-box sl"><div class="oco-box-label">Stop Loss 50%</div><div class="oco-box-val red">$${sl}</div><div class="oco-box-sub">–$${slDlr}</div></div>
-        <div class="oco-box tp"><div class="oco-box-label">Take Profit 80%</div><div class="oco-box-val green">$${tp}</div><div class="oco-box-sub">+$${tpDlr}</div></div>
+        <div class="oco-box sl"><div class="oco-box-label">Stop Loss 30%</div><div class="oco-box-val red">$${sl}</div><div class="oco-box-sub">–$${slDlr}</div></div>
+        <div class="oco-box tp"><div class="oco-box-label">Take Profit 30%</div><div class="oco-box-val green">$${tp}</div><div class="oco-box-sub">+$${tpDlr}</div></div>
       </div>
       <div style="margin-top:8px;font-size:11px;color:var(--muted);font-family:var(--mono);display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between">
         <span>Costo: <strong style="color:${overBudget?'var(--red)':'var(--text)'}">$${cost}</strong> · ${c}c</span>
@@ -1237,7 +1263,7 @@ function resetForm() {
   });
   document.getElementById('f-tipo').value      = 'CALL';
   document.getElementById('f-estado').value    = 'abierto';
-  document.getElementById('f-contratos').value = '3';
+  document.getElementById('f-contratos').value = '1';
   document.getElementById('f-ticker').value    = 'SPY';
   document.getElementById('f-score').value    = '5 — Entrada válida';
   document.getElementById('cierre-fields').style.display = 'none';
@@ -1313,7 +1339,7 @@ function renderHistorial() {
 
 function deltaClass(d) {
   if (!d) return 'badge-dim';
-  if (d >= 0.45 && d <= 0.60) return 'badge-accent';
+  if (d >= 0.45 && d <= 0.50) return 'badge-accent';
   if (d < 0.45) return 'badge-blue';
   return 'badge-amber';
 }
@@ -1384,8 +1410,8 @@ function closeModal() { document.getElementById('edit-modal').classList.remove('
    CALCULADORA (0DTE defaults)
 ═══════════════════════════════════════════════════ */
 function updateCalc() {
-  const p  = parseFloat(document.getElementById('calc-prima').value)||0.35;
-  const c  = parseInt(document.getElementById('calc-contratos').value)||2;
+  const p  = parseFloat(document.getElementById('calc-prima').value)||1.45;
+  const c  = parseInt(document.getElementById('calc-contratos').value)||1;
   const sl = parseInt(document.getElementById('calc-sl').value)/100;
   const tp = parseInt(document.getElementById('calc-tp').value)/100;
   const slP = (p*(1-sl)).toFixed(2), tpP = (p*(1+tp)).toFixed(2);
@@ -1435,7 +1461,7 @@ function updateDeltaViz(v) {
   let info;
   if (dv < 35)       info = { c:'var(--blue)',   l:'OTM profundo — evitar SPY',  d:'Muy lejos del precio. En SPY 0DTE casi nunca llegará a este nivel en una sola sesión.' };
   else if (dv < 45)  info = { c:'var(--blue)',   l:'OTM conservador',            d:'Precio accesible pero en SPY 0DTE puede no moverse suficiente para el TP del 80%.' };
-  else if (dv <= 60) info = { c:'var(--accent)', l:'Zona recomendada SPY ✓',    d:'Δ 0.45–0.60: ideal SPY 0DTE. Spread $0.01–$0.03, máxima liquidez, probabilidad ITM suficiente.' };
+  else if (dv <= 50) info = { c:'var(--accent)', l:'Zona recomendada SPY ✓',    d:'Delta 0.45-0.50: confirmado en 8 trades reales. Spread $0.01-$0.03, maxima liquidez, prima $0.90-$1.79.' };
   else if (dv <= 70) info = { c:'var(--amber)',  l:'Casi ATM — prima más cara',  d:'Mayor costo en SPY. Theta decay muy agresivo después de las 11:30 AM.' };
   else               info = { c:'var(--red)',    l:'ITM — fuera de rango SPY',   d:'Prima alta, spread más amplio. No corresponde al perfil de riesgo de la estrategia.' };
   document.getElementById('delta-info').innerHTML = `
@@ -1500,7 +1526,7 @@ function renderReporteResumen() {
   const s  = stats(closedTrades());
   const el = document.getElementById('r-stats-general');
   if (!s.total) { el.innerHTML='<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin datos</div></div>'; return; }
-  const winRateNeeded = 38; // con ratio 1:1.6 el break-even es ~38%
+  const winRateNeeded = 50; // con ratio 1:1 (SL 30% / TP 30%) el break-even es 50%
   el.innerHTML = [
     ['Total trades',       s.total],
     ['Trades ganadores',   `${s.wins} (${(s.wr*100).toFixed(0)}%)`],
@@ -1776,7 +1802,7 @@ document.getElementById('f-ticker').value = 'SPY';
 const etInit = getETMinutes();
 document.getElementById('f-hora').value = `${String(etInit.h).padStart(2,'0')}:${String(etInit.m).padStart(2,'0')}`;
 updateCalc();
-updateDeltaViz(50);
+updateDeltaViz(46);
 
 // Cerrar modales al clic fuera
 document.getElementById('edit-modal').addEventListener('click', e => {
