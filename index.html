@@ -349,7 +349,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                 <input class="form-control" id="f-iv" type="number" placeholder="2.4" step="0.1">
               </div>
               <div>
-                <label class="form-label">Score checklist (0–5)</label>
+                <label class="form-label">Score checklist (0–5) <span style="color:var(--muted);font-weight:400">— auto, según checklist →</span></label>
                 <select class="form-control" id="f-score">
                   <option>5 — Entrada válida</option>
                   <option>4 — Posible entrada</option>
@@ -974,6 +974,9 @@ function navigate(page) {
     // Pre-fill hora actual ET
     const et = getETMinutes();
     document.getElementById('f-hora').value = `${String(et.h).padStart(2,'0')}:${String(et.m).padStart(2,'0')}`;
+    // Reinicia el checklist y el score cada vez que se abre esta página
+    document.querySelectorAll('#quick-checks .toggle.on').forEach(t=>t.classList.remove('on'));
+    updateQuickScore();
     calcOCOInline();
   }
 }
@@ -1148,6 +1151,18 @@ function updateQuickScore() {
   const texts   = ['0/5 — Sin verificar','1/5 — No operar','2/5 — No operar','3/5 — Esperar','4/5 — Posible entrada','5/5 — Entrada válida ✓'];
   dots.forEach((d,i) => { d.style.background = i<score ? colors[Math.max(1,score)] : 'var(--bg4)'; });
   document.getElementById('q-score-text').textContent = texts[score];
+
+  // Sincroniza automáticamente el dropdown "Score checklist" con el checklist real
+  const scoreOptions = [
+    '0 — No operar',
+    '1 — No operar',
+    '2 — No operar',
+    '3 — Esperar',
+    '4 — Posible entrada',
+    '5 — Entrada válida'
+  ];
+  const fScore = document.getElementById('f-score');
+  if (fScore) fScore.value = scoreOptions[score];
 }
 
 /* ═══════════════════════════════════════════════════
