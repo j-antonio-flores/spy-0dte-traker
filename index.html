@@ -185,17 +185,13 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
 
     <!-- Reloj de sesión 0DTE -->
     <div class="clock-widget">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div class="clock-session">ET (Nueva York)</div>
-          <div class="clock-time" id="clock-time">--:--:--</div>
-        </div>
-        <div style="text-align:right">
-          <div class="clock-session">CT (México)</div>
-          <div class="clock-time" id="clock-time-ct" style="font-size:15px;color:var(--muted)">--:--:--</div>
-        </div>
+      <div class="clock-session">SESIÓN ET</div>
+      <div class="clock-time" id="clock-time">--:--:--</div>
+      <div class="clock-time-ct-row" style="display:flex;align-items:baseline;gap:6px;margin-top:2px">
+        <span class="clock-session" style="margin-bottom:0">CT (México)</span>
+        <span class="clock-time" id="clock-time-ct" style="font-size:13px;color:var(--muted)">--:--:--</span>
       </div>
-      <div class="clock-status" id="clock-status" style="color:var(--muted)">Calculando...</div>
+      <div class="clock-status" id="clock-status" style="color:var(--muted);margin-top:8px">Calculando...</div>
       <div class="clock-bar"><div class="clock-fill" id="clock-fill" style="width:0%;background:var(--accent)"></div></div>
       <div class="clock-countdown" id="clock-countdown"></div>
     </div>
