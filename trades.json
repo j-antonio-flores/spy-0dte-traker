@@ -160,5 +160,23 @@
     "estado": "perdida",
     "primaOut": 0.76,
     "pnl": -35
+  },
+  {
+    "id": "mrjcmyhwwovu",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-07-13",
+    "hora": "10:47",
+    "horaOut": null,
+    "strike": 752,
+    "delta": 0.5,
+    "prima": 1.28,
+    "contratos": 1,
+    "iv": null,
+    "score": 0,
+    "notas": "No se tomo en cuenta el checklist",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
