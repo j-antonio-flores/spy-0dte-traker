@@ -175,7 +175,7 @@
     "iv": null,
     "score": 0,
     "notas": "No se tomo en cuenta el checklist, sin embargo el analisis no fue bueno, y rompi la regla del segundo trade, tratando de recuperar el trade utiliando la estrategia del script, solo tome en cuenta el volumen de TOS y marcaba un put, en conclusion este analisis fue apresurado, no volver a hacerlo de esta manera. Hay que esperar tendencia con volumen y revisar ema 9 y 21",
-    "estado": "abierto",
+    "estado": "perdida",
     "primaOut": 0.89,
     "pnl": -39
   }
