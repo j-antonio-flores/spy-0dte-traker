@@ -142,5 +142,23 @@
     "estado": "ganancia",
     "primaOut": 1.78,
     "pnl": 49
+  },
+  {
+    "id": "mrjbt1b4n21y",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-13",
+    "hora": "10:31",
+    "horaOut": null,
+    "strike": 753,
+    "delta": 0.42,
+    "prima": 1.11,
+    "contratos": 1,
+    "iv": null,
+    "score": 4,
+    "notas": "",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
