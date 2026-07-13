@@ -167,16 +167,16 @@
     "tipo": "PUT",
     "fecha": "2026-07-13",
     "hora": "10:47",
-    "horaOut": null,
+    "horaOut": "",
     "strike": 752,
     "delta": 0.5,
     "prima": 1.28,
     "contratos": 1,
     "iv": null,
     "score": 0,
-    "notas": "No se tomo en cuenta el checklist",
+    "notas": "No se tomo en cuenta el checklist, sin embargo el analisis no fue bueno, y rompi la regla del segundo trade, tratando de recuperar el trade utiliando la estrategia del script, solo tome en cuenta el volumen de TOS y marcaba un put, en conclusion este analisis fue apresurado, no volver a hacerlo de esta manera. Hay que esperar tendencia con volumen y revisar ema 9 y 21",
     "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "primaOut": 0.89,
+    "pnl": -39
   }
 ]
