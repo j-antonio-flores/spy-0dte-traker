@@ -178,5 +178,23 @@
     "estado": "perdida",
     "primaOut": 0.89,
     "pnl": -39
+  },
+  {
+    "id": "mrkqmtedeuzm",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-14",
+    "hora": "10:14",
+    "horaOut": null,
+    "strike": 749,
+    "delta": 0.41,
+    "prima": 1.22,
+    "contratos": 1,
+    "iv": null,
+    "score": 4,
+    "notas": "EMA 9 > precio, indicadores 4/5, ratificado con tendencia 3 velas seguidaas. script tambien marca put",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
