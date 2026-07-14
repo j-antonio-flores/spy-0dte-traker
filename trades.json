@@ -185,16 +185,16 @@
     "tipo": "CALL",
     "fecha": "2026-07-14",
     "hora": "10:14",
-    "horaOut": null,
+    "horaOut": "10:16",
     "strike": 749,
     "delta": 0.41,
     "prima": 1.22,
     "contratos": 1,
     "iv": null,
     "score": 4,
-    "notas": "EMA 9 > precio, indicadores 4/5, ratificado con tendencia 3 velas seguidaas. script tambien marca put",
-    "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "notas": "EMA 9 > precio, indicadores 4/5, ratificado con tendencia 3 velas seguidaas. script tambien marca put. Volumen tn TOS marcaba mayor volumen en CALL",
+    "estado": "ganancia",
+    "primaOut": 1.59,
+    "pnl": 37
   }
 ]
