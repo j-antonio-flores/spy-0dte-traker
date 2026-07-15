@@ -221,7 +221,7 @@
     "tipo": "CALL",
     "fecha": "2026-07-15",
     "hora": "22:28",
-    "horaOut": null,
+    "horaOut": "",
     "strike": 754,
     "delta": 0.48,
     "prima": 1.38,
@@ -229,8 +229,8 @@
     "iv": null,
     "score": 4,
     "notas": "",
-    "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "estado": "perdida",
+    "primaOut": 0.9,
+    "pnl": -48
   }
 ]
