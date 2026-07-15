@@ -203,7 +203,7 @@
     "tipo": "CALL",
     "fecha": "2026-07-15",
     "hora": "10:13",
-    "horaOut": null,
+    "horaOut": "",
     "strike": 755,
     "delta": 0.49,
     "prima": 1.05,
@@ -211,8 +211,8 @@
     "iv": null,
     "score": 4,
     "notas": "Ema 9 < Ema 21 < precio, TOS volumen marca tendencia call, se ve el mercado chopy pero se mete trade arriegado como CALL, la grafica del script marcabz CALL tambien",
-    "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "estado": "perdida",
+    "primaOut": 0.72,
+    "pnl": -33
   }
 ]
