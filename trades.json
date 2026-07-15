@@ -214,5 +214,23 @@
     "estado": "perdida",
     "primaOut": 0.72,
     "pnl": -33
+  },
+  {
+    "id": "mrmpx00zpy4h",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-15",
+    "hora": "10:28",
+    "horaOut": null,
+    "strike": 754,
+    "delta": 0.49,
+    "prima": 1.38,
+    "contratos": 1,
+    "iv": null,
+    "score": 4,
+    "notas": "EMA 9 < 21 y precio estaba por debajo de los EMAs, sin embargo el script marcaba un CALL, se realizo el trade de prueba con un CALL",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
