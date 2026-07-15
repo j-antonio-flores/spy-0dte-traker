@@ -214,5 +214,23 @@
     "estado": "perdida",
     "primaOut": 0.72,
     "pnl": -33
+  },
+  {
+    "id": "mrmktsv0sqa9",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-15",
+    "hora": "22:28",
+    "horaOut": null,
+    "strike": 754,
+    "delta": 0.48,
+    "prima": 1.38,
+    "contratos": 1,
+    "iv": null,
+    "score": 4,
+    "notas": "",
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
