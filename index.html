@@ -364,6 +364,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
               <label class="form-label">Notas / setup SPY 0DTE</label>
               <textarea class="form-control" id="f-notas" rows="3" placeholder="Ej. EMA9>21 en 15min, precio sobre VWAP, RSI 58, BB Width 2.1% bajando, entrada 10:05am..."></textarea>
             </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+              <input type="checkbox" id="f-prueba" style="width:16px;height:16px;cursor:pointer">
+              <label for="f-prueba" style="font-size:12px;color:var(--muted);cursor:pointer">Es trade de prueba (no cuenta para métricas de la estrategia)</label>
+            </div>
             <div id="f-oco-preview" style="margin-top:14px"></div>
           </div>
 
@@ -976,6 +980,7 @@ function navigate(page) {
     document.getElementById('f-hora').value = `${String(et.h).padStart(2,'0')}:${String(et.m).padStart(2,'0')}`;
     // Reinicia el checklist y el score cada vez que se abre esta página
     document.querySelectorAll('#quick-checks .toggle.on').forEach(t=>t.classList.remove('on'));
+    document.getElementById('f-prueba').checked = false;
     updateQuickScore();
     calcOCOInline();
   }
@@ -997,7 +1002,7 @@ function fmtMoney2(v) {
    SIDEBAR BUDGET
 ═══════════════════════════════════════════════════ */
 function updateSidebar() {
-  const closed = trades.filter(t => t.estado !== 'abierto');
+  const closed = trades.filter(t => t.estado !== 'abierto' && !t.esPrueba);
   const pnl    = closed.reduce((a,t) => a + (t.pnl||0), 0);
   const current = BUDGET + pnl;
   const pct    = Math.max(0, Math.min(100, (current/BUDGET)*100));
@@ -1011,7 +1016,7 @@ function updateSidebar() {
    DASHBOARD
 ═══════════════════════════════════════════════════ */
 function renderDashboard() {
-  const closed = trades.filter(t => t.estado !== 'abierto');
+  const closed = trades.filter(t => t.estado !== 'abierto' && !t.esPrueba);
   const pnl    = closed.reduce((a,t) => a+(t.pnl||0), 0);
   const wins   = closed.filter(t => t.pnl > 0).length;
   const wr     = closed.length ? Math.round(wins/closed.length*100) : null;
@@ -1100,7 +1105,7 @@ const CHART_BASE = { responsive:true, maintainAspectRatio:false, plugins:{ legen
 function buildEquityChart() {
   const ctx = document.getElementById('chart-equity').getContext('2d');
   if (chartEquity) chartEquity.destroy();
-  const sorted = [...trades].filter(t=>t.estado!=='abierto').sort((a,b)=>a.fecha>b.fecha?1:-1);
+  const sorted = [...trades].filter(t=>t.estado!=='abierto' && !t.esPrueba).sort((a,b)=>a.fecha>b.fecha?1:-1);
   let run = BUDGET;
   const labels=['Inicio'], data=[run];
   sorted.forEach(t=>{ run+=(t.pnl||0); labels.push(fmtDate(t.fecha)); data.push(run); });
@@ -1115,7 +1120,7 @@ function buildEquityChart() {
 function buildDistChart() {
   const ctx = document.getElementById('chart-dist').getContext('2d');
   if (chartDist) chartDist.destroy();
-  const closed = trades.filter(t=>t.estado!=='abierto');
+  const closed = trades.filter(t=>t.estado!=='abierto' && !t.esPrueba);
   const wins    = closed.filter(t=>t.pnl>0).length;
   const losses  = closed.filter(t=>t.pnl<0).length;
   const forzado = closed.filter(t=>t.estado==='forzado').length;
@@ -1257,6 +1262,7 @@ function saveTrade() {
     iv:    parseFloat(document.getElementById('f-iv').value)||null,
     score: parseInt(scoreText[0]),
     notas: document.getElementById('f-notas').value.trim(),
+    esPrueba: document.getElementById('f-prueba').checked,
     estado, primaOut, pnl,
   };
 
@@ -1277,6 +1283,7 @@ function resetForm() {
   document.getElementById('f-contratos').value = '1';
   document.getElementById('f-ticker').value    = 'SPY';
   document.getElementById('f-score').value    = '5 — Entrada válida';
+  document.getElementById('f-prueba').checked  = false;
   document.getElementById('cierre-fields').style.display = 'none';
   document.getElementById('f-oco-preview').innerHTML = '';
   document.getElementById('resultado-calc').innerHTML = '';
@@ -1328,7 +1335,7 @@ function renderHistorial() {
     return `<tr>
       <td>${fmtDate(t.fecha)}</td>
       <td style="color:${horaColor};font-family:var(--mono)">${t.hora||'—'}</td>
-      <td style="font-weight:600">${t.ticker}</td>
+      <td style="font-weight:600">${t.ticker}${t.esPrueba?' <span class="badge badge-amber" style="font-size:9px;vertical-align:middle">PRUEBA</span>':''}</td>
       <td><span class="badge ${t.tipo==='CALL'?'badge-green':'badge-red'}">${t.tipo}</span></td>
       <td>$${t.strike||'—'}</td>
       <td><span class="badge ${deltaClass(t.delta)}">Δ${t.delta||'—'}</span></td>
@@ -1379,6 +1386,10 @@ function openEdit(id) {
       <div><label class="form-label">Notas</label>
         <textarea class="form-control" id="em-notas" rows="3" placeholder="Notas del trade...">${t.notas||''}</textarea></div>
     </div>
+    <div style="margin:6px 0;display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="em-prueba" ${t.esPrueba?'checked':''} style="width:16px;height:16px;cursor:pointer">
+      <label for="em-prueba" style="font-size:12px;color:var(--muted);cursor:pointer">Es trade de prueba (no cuenta para métricas de la estrategia)</label>
+    </div>
     <div class="form-row g2">
       <div><label class="form-label">Hora cierre ET</label>
         <input class="form-control" id="em-hora-out" type="time" value="${t.horaOut||''}"></div>
@@ -1407,6 +1418,7 @@ function saveEditTrade() {
   t.primaOut = parseFloat(document.getElementById('em-prima-out').value)||null;
   t.horaOut  = document.getElementById('em-hora-out').value;
   t.notas    = document.getElementById('em-notas').value;
+  t.esPrueba = document.getElementById('em-prueba').checked;
   t.pnl      = t.primaOut!==null ? Math.round((t.primaOut-t.prima)*100*(t.contratos||1)) : null;
   save(); closeModal(); renderHistorial(); notify('Trade actualizado ✓','green'); updateSidebar();
 }
@@ -1503,7 +1515,7 @@ function showReportTab(id) {
 
 function renderReportes() { renderReporteResumen(); populateComparadores(); }
 
-function closedTrades() { return trades.filter(t=>t.estado!=='abierto'); }
+function closedTrades() { return trades.filter(t=>t.estado!=='abierto' && !t.esPrueba); }
 
 function stats(list) {
   const wins   = list.filter(t=>t.pnl>0);
@@ -1519,7 +1531,7 @@ function stats(list) {
 function renderReporteResumen() {
   const ctx = document.getElementById('r-chart-equity').getContext('2d');
   if (rChartEquity) rChartEquity.destroy();
-  const sorted = [...trades].filter(t=>t.estado!=='abierto').sort((a,b)=>a.fecha>b.fecha?1:-1);
+  const sorted = [...trades].filter(t=>t.estado!=='abierto' && !t.esPrueba).sort((a,b)=>a.fecha>b.fecha?1:-1);
   let run=BUDGET; const labs=['Inicio'], data=[run];
   sorted.forEach(t=>{ run+=(t.pnl||0); labs.push(fmtDate(t.fecha)); data.push(run); });
   rChartEquity = new Chart(ctx, { type:'line', data:{ labels:labs, datasets:[{ data, borderColor:CC.accent, backgroundColor:'rgba(200,240,96,.06)', fill:true, tension:.4, pointRadius:2, borderWidth:2 }] },
