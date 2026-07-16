@@ -231,6 +231,7 @@
     "notas": "EMA 9 < 21 y precio estaba por debajo de los EMAs, sin embargo el script marcaba un CALL, se realizo el trade de prueba con un CALL",
     "estado": "perdida",
     "primaOut": 0.9,
-    "pnl": -48
+    "pnl": -48,
+    "esPrueba": true
   }
 ]
