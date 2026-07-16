@@ -233,5 +233,24 @@
     "primaOut": 0.9,
     "pnl": -48,
     "esPrueba": true
+  },
+  {
+    "id": "mrnqsek8of1h",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-16",
+    "hora": "12:47",
+    "horaOut": null,
+    "strike": 754,
+    "delta": 0.54,
+    "prima": 1.23,
+    "contratos": 1,
+    "iv": 0.19,
+    "score": 5,
+    "notas": "EMA 9 > 21, precio esta por encima del EMA 9, casi en el soporte, no hay tendencia de tres velas sin embargo se mete CALL",
+    "esPrueba": false,
+    "estado": "abierto",
+    "primaOut": null,
+    "pnl": null
   }
 ]
