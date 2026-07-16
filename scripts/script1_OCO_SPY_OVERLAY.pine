@@ -1,0 +1,238 @@
+//@version=5
+indicator("OCO SPY 0DTE - Overlay", shorttitle="OCO.SPY.OV", overlay=true)
+
+// ======================================================
+// INPUTS
+// ======================================================
+grp_ema = "Tendencia (15 min)"
+i_ema_fast  = input.int(9,     "EMA rapida",   group=grp_ema)
+i_ema_slow  = input.int(21,    "EMA lenta",    group=grp_ema)
+i_show_emas = input.bool(true, "Mostrar EMAs", group=grp_ema)
+i_show_vwap = input.bool(true, "Mostrar VWAP", group=grp_ema)
+
+grp_rsi = "RSI 14 (verificar en TradingView nativo a 5 min)"
+i_rsi_len = input.int(14, "RSI Length", group=grp_rsi)
+i_rsi_lo  = input.int(35, "RSI minimo", group=grp_rsi, tooltip="Zona valida SPY 0DTE: 35-70. Verificar en el RSI 14 nativo de TradingView configurado en 5 min.")
+i_rsi_hi  = input.int(70, "RSI maximo", group=grp_rsi, tooltip="Zona valida SPY 0DTE: 35-70. Verificar en el RSI 14 nativo de TradingView configurado en 5 min.")
+
+grp_iv = "Volatilidad SPY"
+i_bb_len    = input.int(20,    "BB Length",           group=grp_iv)
+i_bb_mult   = input.float(2.0, "BB Std Dev",          group=grp_iv, step=0.5)
+i_iv_thresh = input.float(3.5, "BB Width umbral (%)", group=grp_iv, tooltip="SPY normal: 1.5-3.5%. Sobre 3.5% la IV es alta para SPY.")
+
+grp_hor = "Ventana horaria SPY (ET)"
+i_hora_apertura = input.int(945,  "Apertura (HHMM)", group=grp_hor)
+i_hora_cierre   = input.int(1130, "Cierre ventana",  group=grp_hor)
+i_hora_forzado  = input.int(1545, "Cierre forzado",  group=grp_hor)
+
+grp_spy = "Dias cautela SPY"
+i_warn_monday = input.bool(true, "Alerta lunes",     group=grp_spy)
+i_warn_friday = input.bool(true, "Alerta viernes",   group=grp_spy)
+i_warn_fomc   = input.bool(true, "Alerta miercoles", group=grp_spy)
+
+grp_delta = "Delta SPY 0DTE (solo para registro, no se muestra en tabla)"
+i_target_delta = input.float(0.46, "Delta objetivo",  group=grp_delta, step=0.01, tooltip="Dato real 8 trades: delta usado 0.45-0.48, centrado en 0.46. Zona confirmada 0.45-0.50.")
+i_delta_tol    = input.float(0.05, "Tolerancia",      group=grp_delta, step=0.01)
+
+grp_vis = "Visualizacion"
+i_show_table  = input.bool(true,  "Mostrar tabla",  group=grp_vis)
+i_show_bg     = input.bool(true,  "Fondo semaforo", group=grp_vis)
+i_show_window = input.bool(true,  "Fondo horario",  group=grp_vis)
+i_tbl_pos     = input.string("top_right", "Posicion tabla", options=["top_right","top_left","bottom_right","bottom_left"], group=grp_vis)
+
+// ======================================================
+// CALCULOS
+// ======================================================
+ema_fast = ta.ema(close, i_ema_fast)
+ema_slow = ta.ema(close, i_ema_slow)
+
+vwap_val   = ta.vwap(hlc3)
+above_vwap = close > vwap_val
+below_vwap = close < vwap_val
+
+cond_trend_call = ema_fast > ema_slow and above_vwap
+cond_trend_put  = ema_fast < ema_slow and below_vwap
+cond_trend      = cond_trend_call or cond_trend_put
+
+// RSI calculado en el timeframe del grafico (15 min referencia)
+// Para la decision final usar el RSI 14 nativo de TradingView configurado en 5 min
+rsi      = ta.rsi(close, i_rsi_len)
+cond_rsi = rsi >= i_rsi_lo and rsi <= i_rsi_hi
+
+[bb_mid, bb_upper, bb_lower] = ta.bb(close, i_bb_len, i_bb_mult)
+bb_width     = (bb_upper - bb_lower) / bb_mid * 100
+bb_width_avg = ta.sma(bb_width, 5)
+iv_expanding = bb_width > bb_width[1] and bb_width > bb_width_avg
+cond_iv      = bb_width < i_iv_thresh and not iv_expanding
+
+hora_barra   = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+en_ventana   = hora_barra >= i_hora_apertura and hora_barra <= i_hora_cierre
+en_peligro   = hora_barra > i_hora_cierre and hora_barra < i_hora_forzado
+en_cierre    = hora_barra >= i_hora_forzado
+cond_horario = en_ventana
+
+dia_semana   = dayofweek(time, "America/New_York")
+es_lunes     = dia_semana == dayofweek.monday
+es_miercoles = dia_semana == dayofweek.wednesday
+es_viernes   = dia_semana == dayofweek.friday
+dia_cautela  = (i_warn_monday and es_lunes) or (i_warn_fomc and es_miercoles) or (i_warn_friday and es_viernes)
+cond_nocat   = not dia_cautela
+
+score_c1 = cond_trend   ? 1 : 0
+score_c2 = cond_rsi     ? 1 : 0
+score_c3 = cond_iv      ? 1 : 0
+score_c4 = cond_horario ? 1 : 0
+score_c5 = cond_nocat   ? 1 : 0
+score    = score_c1 + score_c2 + score_c3 + score_c4 + score_c5
+
+ema_cross_up   = ta.crossover(ema_fast,  ema_slow)
+ema_cross_down = ta.crossunder(ema_fast, ema_slow)
+call_signal    = ema_cross_up   and above_vwap and cond_rsi and cond_iv and en_ventana
+put_signal     = ema_cross_down and below_vwap and cond_rsi and cond_iv and en_ventana
+call_cont      = ema_fast > ema_slow and above_vwap and cond_rsi and cond_iv and en_ventana and rsi > 50
+put_cont       = ema_fast < ema_slow and below_vwap and cond_rsi and cond_iv and en_ventana and rsi < 50
+
+// Estimacion de delta (solo para registro historico via Data Window, no se muestra en tabla ni en el chart)
+atr_intra        = ta.atr(14)
+delta_otm_factor = math.max(0.0, (0.50 - i_target_delta) * 2.5)
+strike_offset    = atr_intra * delta_otm_factor
+call_strike_est  = math.round(close + strike_offset)
+put_strike_est   = math.round(close - strike_offset)
+call_dist_atr    = (call_strike_est - close) / math.max(atr_intra, 0.01)
+put_dist_atr     = (close - put_strike_est)  / math.max(atr_intra, 0.01)
+est_call_delta   = math.max(0.10, math.min(0.95, 0.50 - call_dist_atr * 0.12))
+est_put_delta    = math.max(0.10, math.min(0.95, 0.50 - put_dist_atr  * 0.12))
+
+// ======================================================
+// COLORES
+// ======================================================
+col_green  = color.new(#4ecb8f, 0)
+col_amber  = color.new(#f0b840, 0)
+col_red    = color.new(#f06060, 0)
+col_blue   = color.new(#60a8f0, 0)
+col_accent = color.new(#c8f060, 0)
+col_dim    = color.new(#7a8090, 0)
+col_vwap   = color.new(#b060f0, 0)
+col_bg0    = color.new(#0d0f12, 0)
+col_bg1    = color.new(#1a1e25, 0)
+
+score_color   = score >= 5 ? col_green : score == 4 ? col_blue : score == 3 ? col_amber : col_red
+horario_label = en_cierre ? "CIERRE FORZADO" : en_peligro ? "ZONA MUERTA" : en_ventana ? "VENTANA VALIDA" : "ANTES APERTURA"
+horario_color = en_ventana ? col_green : col_red
+
+// ======================================================
+// PLOTS
+// ======================================================
+plot(i_show_emas ? ema_fast : na, "EMA 9",  color=ema_fast > ema_slow ? col_accent : col_red, linewidth=2)
+plot(i_show_emas ? ema_slow : na, "EMA 21", color=col_dim, linewidth=1)
+plot(i_show_vwap ? vwap_val : na, "VWAP",   color=col_vwap, linewidth=2, style=plot.style_circles)
+
+// Series ocultas — no se ven en el chart, solo en la Data Window (Alt+D) y en "Export chart data".
+// Permiten reconstruir el histórico de RSI / BB Width / Score al retroceder a cualquier hora pasada.
+plot(rsi,      "RSI 14 (data window)",       display=display.data_window)
+plot(bb_width, "BB Width % (data window)",   display=display.data_window)
+plot(score,    "Score checklist (data window)", display=display.data_window)
+plot(est_call_delta, "Delta CALL estimado (data window)", display=display.data_window)
+plot(est_put_delta,  "Delta PUT estimado (data window)",  display=display.data_window)
+
+plotshape(series=ema_cross_up   and en_ventana, title="EMA Bull", style=shape.triangleup,   location=location.belowbar, color=col_accent, size=size.small)
+plotshape(series=ema_cross_down and en_ventana, title="EMA Bear", style=shape.triangledown, location=location.abovebar, color=col_red,    size=size.small)
+plotshape(series=call_signal,                   title="CALL SPY",  style=shape.labelup,     location=location.belowbar, color=col_green, textcolor=color.black, text="CALL", size=size.normal)
+plotshape(series=put_signal,                    title="PUT SPY",   style=shape.labeldown,   location=location.abovebar, color=col_red,   textcolor=color.white, text="PUT",  size=size.normal)
+plotshape(series=call_cont and not call_signal, title="CALL cont", style=shape.triangleup,  location=location.belowbar, color=color.new(#4ecb8f, 40), size=size.tiny)
+plotshape(series=put_cont  and not put_signal,  title="PUT cont",  style=shape.triangledown,location=location.abovebar, color=color.new(#f06060, 40), size=size.tiny)
+
+// ======================================================
+// FONDOS
+// ======================================================
+bgcolor(i_show_bg     and score >= 5 and en_ventana and not dia_cautela ? color.new(#4ecb8f, 97) : na, title="BG: Entrada valida")
+bgcolor(i_show_bg     and score == 4 and en_ventana and not dia_cautela ? color.new(#60a8f0, 97) : na, title="BG: Posible entrada")
+bgcolor(i_show_bg     and score == 3 and en_ventana                     ? color.new(#f0b840, 97) : na, title="BG: Esperar")
+bgcolor(i_show_bg     and score  < 3 and en_ventana                     ? color.new(#f06060, 97) : na, title="BG: No operar")
+bgcolor(i_show_window and en_ventana and dia_cautela ? color.new(#f0b840, 96) : na, title="BG: Dia cautela")
+bgcolor(i_show_window and en_peligro                 ? color.new(#f06060, 96) : na, title="BG: Zona muerta")
+bgcolor(i_show_window and en_cierre                  ? color.new(#f06060, 91) : na, title="BG: Cierre forzado")
+
+// ======================================================
+// TABLA  - tabla.merge_cells no en v5 free
+//           se simulan headers con 3 celdas del mismo color
+// ======================================================
+tbl_pos_map(p) =>
+    p == "top_right" ? position.top_right : p == "top_left" ? position.top_left : p == "bottom_right" ? position.bottom_right : position.bottom_left
+
+var table tbl = na
+if i_show_table
+    tbl := table.new(tbl_pos_map(i_tbl_pos), 3, 9, bgcolor=color.new(#13161b, 5), border_color=color.new(#ffffff, 88), border_width=1, frame_color=color.new(#ffffff, 80), frame_width=1)
+
+    // fila 0 - header (3 celdas mismo color)
+    hdr = "SPY 0DTE | " + horario_label + (dia_cautela ? " | CAUTELA" : "")
+    hdr_col = dia_cautela ? col_amber : horario_color
+    table.cell(tbl, 0, 0, "",   text_color=hdr_col, text_size=size.normal, bgcolor=col_bg0)
+    table.cell(tbl, 1, 0, hdr,  text_color=hdr_col, text_size=size.normal, bgcolor=col_bg0, text_halign=text.align_left)
+    table.cell(tbl, 2, 0, "",   text_color=hdr_col, text_size=size.normal, bgcolor=col_bg0)
+
+    // fila 1 - score
+    score_lbl = score >= 5 ? "ENTRADA VALIDA" : score == 4 ? "POSIBLE ENTRADA" : score == 3 ? "ESPERAR" : "NO OPERAR"
+    table.cell(tbl, 0, 1, "",                       text_color=score_color, text_size=size.normal, bgcolor=col_bg1)
+    table.cell(tbl, 1, 1, score_lbl,                text_color=score_color, text_size=size.normal, bgcolor=col_bg1, text_halign=text.align_left)
+    table.cell(tbl, 2, 1, str.tostring(score)+"/5", text_color=score_color, text_size=size.large,  bgcolor=col_bg1)
+
+    // fila 2 - separador checklist
+    table.cell(tbl, 0, 2, "",                    text_color=col_dim, text_size=size.small)
+    table.cell(tbl, 1, 2, "CHECKLIST SPY 0DTE",  text_color=col_dim, text_size=size.small, text_halign=text.align_left)
+    table.cell(tbl, 2, 2, "",                    text_color=col_dim, text_size=size.small)
+
+    // C1 EMA + VWAP
+    c1_ok  = cond_trend_call or cond_trend_put
+    c1_dir = cond_trend_call ? "CALL >VWAP" : cond_trend_put ? "PUT <VWAP" : "Sin dir"
+    c1_col = c1_ok ? col_green : col_red
+    table.cell(tbl, 0, 3, c1_ok ? "ok" : "x",  text_color=c1_col,     text_size=size.normal)
+    table.cell(tbl, 1, 3, "EMA 9/21 + VWAP",   text_color=color.white, text_size=size.small, text_halign=text.align_left)
+    table.cell(tbl, 2, 3, c1_dir,               text_color=c1_col,     text_size=size.small)
+
+    // VWAP detalle
+    vwap_dist = math.round(math.abs(close - vwap_val) / close * 100, 2)
+    table.cell(tbl, 0, 4, "",                                                              text_color=col_dim,  text_size=size.small)
+    table.cell(tbl, 1, 4, "  VWAP $" + str.tostring(math.round(vwap_val, 2)),             text_color=col_vwap, text_size=size.small, text_halign=text.align_left)
+    table.cell(tbl, 2, 4, (above_vwap ? "+" : "-") + str.tostring(vwap_dist) + "%",       text_color=above_vwap ? col_green : col_red, text_size=size.small)
+
+    // C2 RSI
+    c2_col = cond_rsi ? col_green : col_red
+    table.cell(tbl, 0, 5, cond_rsi ? "ok" : "x",        text_color=c2_col,     text_size=size.normal)
+    table.cell(tbl, 1, 5, "RSI 35-70",                  text_color=color.white, text_size=size.small, text_halign=text.align_left)
+    table.cell(tbl, 2, 5, str.tostring(math.round(rsi, 1)), text_color=c2_col,  text_size=size.small)
+
+    // C3 IV
+    c3_col    = cond_iv ? col_green : col_red
+    iv_detail = iv_expanding ? "subiendo" : bb_width >= i_iv_thresh ? "alta" : "OK"
+    table.cell(tbl, 0, 6, cond_iv ? "ok" : "x",                                   text_color=c3_col,     text_size=size.normal)
+    table.cell(tbl, 1, 6, "BB Width <3.5% SPY",                                   text_color=color.white, text_size=size.small, text_halign=text.align_left)
+    table.cell(tbl, 2, 6, str.tostring(math.round(bb_width, 2)) + "% " + iv_detail, text_color=c3_col,   text_size=size.small)
+
+    // C4 Horario
+    c4_col = cond_horario ? col_green : col_red
+    table.cell(tbl, 0, 7, cond_horario ? "ok" : "x", text_color=c4_col,     text_size=size.normal)
+    table.cell(tbl, 1, 7, "Ventana 9:45-11:30 ET",   text_color=color.white, text_size=size.small, text_halign=text.align_left)
+    table.cell(tbl, 2, 7, horario_label,               text_color=c4_col,     text_size=size.small)
+
+    // C5 Dia cautela
+    c5_col  = cond_nocat ? col_green : col_amber
+    dia_txt = es_lunes ? "LUNES" : es_miercoles ? "MIERC-FOMC" : es_viernes ? "VIERNES" : "OK"
+    table.cell(tbl, 0, 8, cond_nocat ? "ok" : "!",  text_color=c5_col,     text_size=size.normal)
+    table.cell(tbl, 1, 8, "Sin dia riesgo SPY",      text_color=color.white, text_size=size.small, text_halign=text.align_left)
+    table.cell(tbl, 2, 8, dia_txt,                   text_color=c5_col,     text_size=size.small)
+
+// ======================================================
+// ALERTAS
+// ======================================================
+alertcondition(score >= 5 and en_ventana,  "SPY 0DTE: Entrada valida 5/5",   "Score 5/5. EMA+VWAP+RSI+IV+Horario cumplidos. Revisar cadena SPY en Schwab/ToS.")
+alertcondition(score == 4 and en_ventana,  "SPY 0DTE: Posible entrada 4/5",  "Score 4/5. Evaluar condicion faltante.")
+alertcondition(call_signal,                "SPY CALL 0DTE - cruce EMA+VWAP", "Senal CALL SPY: cruce EMA alcista + sobre VWAP + RSI + IV + Ventana.")
+alertcondition(put_signal,                 "SPY PUT 0DTE - cruce EMA+VWAP",  "Senal PUT SPY: cruce EMA bajista + bajo VWAP + RSI + IV + Ventana.")
+alertcondition(ta.crossover(close, vwap_val)  and en_ventana, "SPY: Precio cruzo VWAP al alza",   "SPY cruzo VWAP hacia arriba. Sesgo CALL.")
+alertcondition(ta.crossunder(close, vwap_val) and en_ventana, "SPY: Precio cruzo VWAP a la baja", "SPY cruzo VWAP hacia abajo. Sesgo PUT.")
+alertcondition(bb_width > i_iv_thresh and not (bb_width[1] > i_iv_thresh), "SPY: IV supero umbral 3.5%",     "BB Width SPY sobre 3.5%. Prima cara. No abrir posicion 0DTE.")
+alertcondition(hora_barra == i_hora_apertura, "SPY 0DTE: Apertura ventana 9:45 AM ET", "Ventana SPY 0DTE abierta. Verificar score.")
+alertcondition(hora_barra == i_hora_cierre,   "SPY 0DTE: Cierre ventana 11:30 AM ET",  "No abrir nuevas posiciones SPY.")
+alertcondition(hora_barra == i_hora_forzado,  "SPY 0DTE: CIERRE FORZADO 3:45 PM ET",  "CERRAR TODA POSICION SPY AHORA.")
+alertcondition(dia_cautela and en_ventana,    "SPY 0DTE: Dia de cautela",              "Lunes / Miercoles / Viernes. Reducir contratos o saltar el dia.")
