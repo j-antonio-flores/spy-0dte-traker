@@ -259,7 +259,7 @@
     "tipo": "CALL",
     "fecha": "2026-07-17",
     "hora": "10:17",
-    "horaOut": null,
+    "horaOut": "",
     "strike": null,
     "delta": 0.51,
     "prima": 1.75,
@@ -268,8 +268,8 @@
     "score": 4,
     "notas": "EMA 9 > 21 en grafica de 1 minutos, se mete CALL basaod en script",
     "esPrueba": false,
-    "estado": "abierto",
-    "primaOut": null,
-    "pnl": null
+    "estado": "perdida",
+    "primaOut": 1.19,
+    "pnl": -56
   }
 ]
