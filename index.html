@@ -1679,6 +1679,15 @@ function openEdit(id) {
       <div><label class="form-label">Prima salida ($)</label>
         <input class="form-control" id="em-prima-out" type="number" value="${t.primaOut||''}" step="0.05" oninput="emCalcPnl(${t.prima},${t.contratos||1})"></div>
     </div>
+    <label class="form-label" style="margin-top:10px;display:block">Valores de TradingView (editable)</label>
+    <div class="form-row g3">
+      <div><label class="form-label">Delta (0.45–0.50 SPY)</label>
+        <input class="form-control" id="em-delta" type="number" value="${t.delta??''}" step="0.01" min="0.10" max="0.95" placeholder="0.46"></div>
+      <div><label class="form-label">RSI 14 (35–70)</label>
+        <input class="form-control" id="em-rsi" type="number" value="${t.rsi??''}" step="0.1" min="0" max="100" placeholder="58"></div>
+      <div><label class="form-label">BB Width % (SPY &lt;3.5%)</label>
+        <input class="form-control" id="em-iv" type="number" value="${t.iv??''}" step="0.1" placeholder="2.4"></div>
+    </div>
     <div class="form-row">
       <div><label class="form-label">Notas</label>
         <textarea class="form-control" id="em-notas" rows="3" placeholder="Notas del trade...">${t.notas||''}</textarea></div>
@@ -1831,6 +1840,9 @@ function saveEditTrade() {
   t.horaOut  = document.getElementById('em-hora-out').value;
   t.notas    = document.getElementById('em-notas').value;
   t.esPrueba = document.getElementById('em-prueba').checked;
+  t.delta    = parseFloat(document.getElementById('em-delta').value)||null;
+  t.rsi      = parseFloat(document.getElementById('em-rsi').value)||null;
+  t.iv       = parseFloat(document.getElementById('em-iv').value)||null;
   t.pnl      = t.primaOut!==null ? Math.round((t.primaOut-t.prima)*100*(t.contratos||1)) : null;
   save(); closeModal(); renderHistorial(); notify('Trade actualizado ✓','green'); updateSidebar();
 }
