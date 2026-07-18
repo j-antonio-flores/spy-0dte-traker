@@ -36,7 +36,10 @@
     "notas": "Las lines de las EMA > menor que precio, muestrando una tendencia alcista en la linea de los EMA precio por arriba de los EMA's",
     "estado": "ganancia",
     "primaOut": 1.76,
-    "pnl": 41
+    "pnl": 41,
+    "capturas": {
+      "m15": "capturas/mr0w8oofzgq0_m15.jpg"
+    }
   },
   {
     "id": "mr26r6z68fiw",
