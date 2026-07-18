@@ -60,7 +60,10 @@
     "notas": "en grafica de 1 minuto los emas < precio pero muy cerca de maxio valor en la grafica de 15 mins, al parecer no acanzare a tomar el call, por falla ",
     "estado": "ganancia",
     "primaOut": 1.37,
-    "pnl": 39
+    "pnl": 39,
+    "capturas": {
+      "m15": "capturas/mr26r6z68fiw_m15.jpg"
+    }
   },
   {
     "id": "mr3qsebqe80u",
