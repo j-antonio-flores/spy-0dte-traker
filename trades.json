@@ -88,7 +88,9 @@
     "capturas": {
       "m1": "capturas/mr3qsebqe80u_m1.jpg",
       "m15": "capturas/mr3qsebqe80u_m15.jpg"
-    }
+    },
+    "esPrueba": false,
+    "rsi": null
   },
   {
     "id": "mrau1fyrvt79",
