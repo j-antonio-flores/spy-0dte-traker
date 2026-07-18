@@ -298,6 +298,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
 
       <!-- NUEVO TRADE -->
       <div id="page-nueva" class="page">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">Importar desde TOS</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <input type="file" id="tos-file-input" accept=".csv" style="display:none" onchange="handleTosFile(this.files[0])">
+            <button class="btn btn-accent" onclick="document.getElementById('tos-file-input').click()">📄 Importar CSV de TOS (Account Statement)</button>
+            <span style="font-size:11.5px;color:var(--muted)">Lee el archivo de "Account Statement" exportado de TOS y prellena el formulario. RSI / BB Width / Score / Delta se completan a mano con el Data Window de TradingView.</span>
+          </div>
+          <div id="tos-import-status" style="margin-top:10px"></div>
+        </div>
         <div class="grid g2" style="align-items:flex-start">
           <div class="card">
             <div class="card-title">Datos del trade SPY 0DTE</div>
@@ -343,13 +352,17 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                 <input class="form-control" id="f-contratos" type="number" placeholder="1" min="1" max="50" value="1" oninput="calcOCOInline()">
               </div>
             </div>
-            <div class="form-row g2">
+            <div class="form-row g3" style="align-items:end">
               <div>
-                <label class="form-label">BB Width % (umbral SPY 3.5%)</label>
+                <label class="form-label">RSI 14 (35–70)</label>
+                <input class="form-control" id="f-rsi" type="number" placeholder="58" step="0.1" min="0" max="100">
+              </div>
+              <div>
+                <label class="form-label">BB Width % (SPY &lt;3.5%)</label>
                 <input class="form-control" id="f-iv" type="number" placeholder="2.4" step="0.1">
               </div>
               <div>
-                <label class="form-label">Score checklist (0–5) <span style="color:var(--muted);font-weight:400">— auto, según checklist →</span></label>
+                <label class="form-label">Score (0–5) — auto</label>
                 <select class="form-control" id="f-score">
                   <option>5 — Entrada válida</option>
                   <option>4 — Posible entrada</option>
@@ -1205,6 +1218,178 @@ function calcOCOInline() {
 }
 
 /* ═══════════════════════════════════════════════════
+   IMPORTAR CSV DE TOS (Fase 2/3 — puerto JS del parser Python)
+═══════════════════════════════════════════════════ */
+const TOS_SECTION_TITLES = new Set([
+  'Cash Balance','Futures Statements','Forex Statements',
+  'Account Order History','Account Trade History',
+  'Profits and Losses','Account Summary'
+]);
+
+function tosLeerSecciones(texto) {
+  const lineas = texto.split(/\r\n|\n|\r/);
+  const secciones = {};
+  let actual = null, buffer = [];
+  for (const linea of lineas) {
+    const limpio = linea.trim().replace(/^"|"$/g, '');
+    if (TOS_SECTION_TITLES.has(limpio)) {
+      if (actual) secciones[actual] = buffer;
+      actual = limpio; buffer = [];
+    } else if (actual) {
+      buffer.push(linea);
+    }
+  }
+  if (actual) secciones[actual] = buffer;
+  return secciones;
+}
+
+// Parser CSV simple (soporta comillas, suficiente para el formato de TOS)
+function tosParseCsvLine(linea) {
+  const out = []; let cur = ''; let enComillas = false;
+  for (let i=0; i<linea.length; i++) {
+    const c = linea[i];
+    if (c === '"') { enComillas = !enComillas; }
+    else if (c === ',' && !enComillas) { out.push(cur); cur=''; }
+    else { cur += c; }
+  }
+  out.push(cur);
+  return out.map(s=>s.trim());
+}
+
+function tosParsearTradeHistory(lineasSeccion) {
+  const filas = lineasSeccion.filter(l=>l.trim());
+  if (!filas.length) return [];
+  const headers = tosParseCsvLine(filas[0]);
+  const patas = [];
+  for (let i=1; i<filas.length; i++) {
+    const vals = tosParseCsvLine(filas[i]);
+    const row = {};
+    headers.forEach((h,idx)=> row[h.trim()] = (vals[idx]||'').trim());
+    if (row['Exec Time']) patas.push(row);
+  }
+  return patas;
+}
+
+function tosNum(v) {
+  if (v===undefined || v===null || v==='' || v==='~') return null;
+  const n = parseFloat(v);
+  return isNaN(n) ? null : n;
+}
+
+function tosEmparejarTrades(patas) {
+  const grupos = {};
+  patas.forEach(p=>{
+    const clave = [p['Symbol'], p['Strike'], p['Exp'], p['Type']].join('|');
+    (grupos[clave] = grupos[clave] || []).push(p);
+  });
+
+  const trades = [];
+  Object.values(grupos).forEach(grupo=>{
+    const apertura = grupo.find(p=>p['Pos Effect']==='TO OPEN');
+    const cierre   = grupo.find(p=>p['Pos Effect']==='TO CLOSE');
+    if (!apertura) return;
+
+    const [fechaStr, horaIn] = apertura['Exec Time'].split(' ');
+    const [mm,dd,yy] = fechaStr.split('/');
+    const fecha = `20${yy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+    const primaIn   = tosNum(apertura['Price']);
+    const contratos = Math.abs(parseInt(apertura['Qty']||'1'));
+
+    const trade = {
+      ticker: apertura['Symbol'], tipo: apertura['Type'], fecha, hora: horaIn,
+      strike: apertura['Strike'], prima: primaIn, contratos,
+      estado: 'abierto', horaOut: '', primaOut: null, pnl: null, cierreVia: '',
+    };
+
+    if (cierre) {
+      const primaOut = tosNum(cierre['Price']);
+      const horaOut  = cierre['Exec Time'].split(' ')[1];
+      const orderType = cierre['Order Type'] || '';
+      let pnl = null;
+      if (primaIn!==null && primaOut!==null) pnl = Math.round((primaOut-primaIn)*100*contratos*100)/100;
+      const estado = pnl===null ? 'manual' : (pnl>0 ? 'ganancia' : (pnl<0 ? 'perdida' : 'manual'));
+      Object.assign(trade, { estado, horaOut, primaOut, pnl, cierreVia: orderType });
+    }
+    trades.push(trade);
+  });
+
+  trades.sort((a,b)=> (a.fecha+a.hora) < (b.fecha+b.hora) ? -1 : 1);
+  return trades;
+}
+
+function parseTosCsv(texto) {
+  const secciones = tosLeerSecciones(texto);
+  if (!secciones['Account Trade History']) return [];
+  const patas = tosParsearTradeHistory(secciones['Account Trade History']);
+  return tosEmparejarTrades(patas);
+}
+
+let tosCandidatos = [];
+
+function handleTosFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let trades;
+    try {
+      trades = parseTosCsv(e.target.result);
+    } catch (err) {
+      document.getElementById('tos-import-status').innerHTML =
+        `<div style="color:var(--red);font-size:12px">Error leyendo el archivo: ${err.message}</div>`;
+      return;
+    }
+    if (!trades.length) {
+      document.getElementById('tos-import-status').innerHTML =
+        `<div style="color:var(--amber);font-size:12px">No se encontraron trades en "Account Trade History". ¿Es el archivo correcto (Account Statement)?</div>`;
+      return;
+    }
+    tosCandidatos = trades;
+    renderTosCandidatos();
+  };
+  reader.readAsText(file);
+  document.getElementById('tos-file-input').value = '';
+}
+
+function renderTosCandidatos() {
+  const el = document.getElementById('tos-import-status');
+  if (tosCandidatos.length === 1) {
+    fillFormFromTos(0);
+    el.innerHTML = `<div style="color:var(--green);font-size:12px">✓ 1 trade detectado y cargado en el formulario de abajo. Completa RSI / BB Width / Score / Delta y guarda.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${tosCandidatos.length} trades detectados — elige cuál cargar al formulario:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${tosCandidatos.map((t,i)=>`
+        <button class="btn" onclick="fillFormFromTos(${i})">
+          ${t.hora} ${t.ticker} ${t.strike} ${t.tipo} — $${t.prima}→$${t.primaOut??'?'} (${t.estado})
+        </button>`).join('')}
+    </div>`;
+}
+
+function fillFormFromTos(idx) {
+  const t = tosCandidatos[idx];
+  if (!t) return;
+  document.getElementById('f-ticker').value   = t.ticker;
+  document.getElementById('f-tipo').value     = t.tipo;
+  document.getElementById('f-fecha').value    = t.fecha;
+  document.getElementById('f-hora').value     = t.hora.slice(0,5);
+  document.getElementById('f-strike').value   = t.strike;
+  document.getElementById('f-prima').value    = t.prima;
+  document.getElementById('f-contratos').value= t.contratos;
+  document.getElementById('f-estado').value   = t.estado;
+  toggleCierre();
+  if (t.horaOut)  document.getElementById('f-hora-out').value  = t.horaOut.slice(0,5);
+  if (t.primaOut!==null && t.primaOut!==undefined) document.getElementById('f-prima-out').value = t.primaOut;
+  const viaTxt = {STP:'Stop Loss automático', LMT:'Take Profit / límite', MKT:'cierre manual (mercado)'}[t.cierreVia] || t.cierreVia || '';
+  document.getElementById('f-notas').value = `Importado de TOS${viaTxt ? ' - cerrado via '+viaTxt : ''}`;
+  calcOCOInline();
+  calcResultado();
+  document.getElementById('tos-import-status').innerHTML +=
+    `<div style="color:var(--green);font-size:12px;margin-top:6px">✓ Cargado: ${t.ticker} ${t.strike} ${t.tipo} — completa RSI / BB Width / Score / Delta antes de guardar.</div>`;
+}
+
+/* ═══════════════════════════════════════════════════
    RESULTADO CALC
 ═══════════════════════════════════════════════════ */
 function toggleCierre() {
@@ -1260,6 +1445,7 @@ function saveTrade() {
     delta:  parseFloat(document.getElementById('f-delta').value)||null,
     prima, contratos,
     iv:    parseFloat(document.getElementById('f-iv').value)||null,
+    rsi:   parseFloat(document.getElementById('f-rsi').value)||null,
     score: parseInt(scoreText[0]),
     notas: document.getElementById('f-notas').value.trim(),
     esPrueba: document.getElementById('f-prueba').checked,
@@ -1274,7 +1460,7 @@ function saveTrade() {
 }
 
 function resetForm() {
-  ['f-ticker','f-strike','f-delta','f-prima','f-iv','f-notas','f-prima-out'].forEach(id => {
+  ['f-ticker','f-strike','f-delta','f-prima','f-iv','f-rsi','f-notas','f-prima-out'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1454,10 +1640,12 @@ function updateCalc() {
       Costo: <strong style="color:${overB?'var(--red)':'var(--text)'}">$${cost}</strong> · R:R 1:${rr} · ${overB?'⚠ excede 5%':'✓ ok'}
     </div>`;
   buildPnlChart(p, sl, tp);
-  document.getElementById('breakeven-info').innerHTML = `<div style="display:flex;gap:16px;font-size:11.5px;font-family:var(--mono);color:var(--muted);flex-wrap:wrap">
-    <span>Break-even: <strong style="color:var(--text)">$${p.toFixed(2)}</strong></span>
-    <span>+$${tpD} TP</span><span>–$${slD} SL</span><span>R:R 1:${rr}</span>
-  </div>`;
+  document.getElementById('breakeven-info').innerHTML = `
+    <div class="oco-result" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="oco-box tp"><div class="oco-box-label">Ganancia máxima</div><div class="oco-box-val green">+$${tpD}</div><div class="oco-box-sub">a Take Profit ${Math.round(tp*100)}%</div></div>
+      <div class="oco-box sl"><div class="oco-box-label">Pérdida máxima</div><div class="oco-box-val red">–$${slD}</div><div class="oco-box-sub">a Stop Loss ${Math.round(sl*100)}%</div></div>
+      <div class="oco-box" style="border-color:var(--border);background:var(--bg3)"><div class="oco-box-label">Break-even</div><div class="oco-box-val">$${p.toFixed(2)}</div><div class="oco-box-sub">R:R 1:${rr}</div></div>
+    </div>`;
 }
 
 function buildPnlChart(prima, sl, tp) {
@@ -1710,10 +1898,10 @@ function renderComparar() {
    EXPORT
 ═══════════════════════════════════════════════════ */
 function exportData() {
-  const headers = ['Fecha','Hora entrada ET','Ticker','Tipo','Strike','Delta','Prima entrada','Prima salida','Contratos','BB Width/IV','Score','Estado','Hora cierre ET','P&L ($)','Notas'];
+  const headers = ['Fecha','Hora entrada ET','Ticker','Tipo','Strike','Delta','Prima entrada','Prima salida','Contratos','RSI','BB Width/IV','Score','Estado','Hora cierre ET','P&L ($)','Notas'];
   const rows = trades.map(t => [
     t.fecha, t.hora||'', t.ticker, t.tipo, t.strike||'', t.delta||'', t.prima,
-    t.primaOut||'', t.contratos||1, t.iv||'', t.score!==undefined?t.score:'',
+    t.primaOut||'', t.contratos||1, t.rsi||'', t.iv||'', t.score!==undefined?t.score:'',
     t.estado, t.horaOut||'', t.pnl!==null?t.pnl:'', t.notas||''
   ]);
   const csv = [headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
