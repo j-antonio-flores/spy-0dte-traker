@@ -863,13 +863,18 @@ async function saveToGitHub() {
 function save() { saveToGitHub(); }
 
 /* ═══════════════════════════════════════════════════
-   CAPTURAS DE TRADINGVIEW — capturas/{tradeId}.jpg en el repo
+   CAPTURAS DE TRADINGVIEW — capturas/{tradeId}_{tf}.jpg en el repo
+   Multi-timeframe: agregar un timeframe nuevo = agregar una línea a CAPTURA_TIMEFRAMES.
 ═══════════════════════════════════════════════════ */
+const CAPTURA_TIMEFRAMES = [
+  { key: 'm15', label: '15 min (setup)' },
+  { key: 'm1',  label: '1 min (entrada)' },
+];
 const CAPTURA_MAX_LADO   = 1280;
 const CAPTURA_CALIDAD    = 0.7;
 const CAPTURA_MAX_BYTES  = 900 * 1024; // ~900KB en base64, margen bajo el límite práctico de ~1MB
 
-function capturaPath(tradeId) { return `capturas/${tradeId}.jpg`; }
+function capturaPath(tradeId, tf) { return `capturas/${tradeId}_${tf}.jpg`; }
 
 // Comprime un File de imagen a base64 JPEG (sin prefijo data:), redimensionando si excede CAPTURA_MAX_LADO.
 // Si el resultado sigue pesando de más, reduce calidad en pasos hasta caber en CAPTURA_MAX_BYTES.
@@ -906,11 +911,11 @@ function comprimirImagen(file) {
   });
 }
 
-// Sube (o reemplaza) la captura de un trade. Si ya existe, primero obtiene su sha para poder sobrescribir.
-async function subirCaptura(tradeId, base64) {
+// Sube (o reemplaza) la captura de un trade en un timeframe dado. Si ya existe, obtiene su sha para sobrescribir.
+async function subirCaptura(tradeId, tf, base64) {
   const cfg = getGHConfig();
   if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) throw new Error('GitHub no configurado');
-  const path = capturaPath(tradeId);
+  const path = capturaPath(tradeId, tf);
   let sha = null;
   try {
     const existente = await fetch(ghApiUrlFor(cfg, path), { headers: ghHeaders(cfg) });
@@ -918,7 +923,7 @@ async function subirCaptura(tradeId, base64) {
   } catch { /* no existe aún, sin problema */ }
 
   const body = {
-    message: `captura: trade ${tradeId} — ${today()}`,
+    message: `captura ${tf}: trade ${tradeId} — ${today()}`,
     content: base64,
     ...(sha ? { sha } : {})
   };
@@ -929,29 +934,38 @@ async function subirCaptura(tradeId, base64) {
   return true;
 }
 
-// Obtiene la captura de un trade como data-URL (repo privado → hay que pasar por Contents API con token).
-async function obtenerCaptura(tradeId) {
+// Obtiene la captura de un trade en un timeframe dado, como data-URL (repo privado → Contents API con token).
+async function obtenerCaptura(tradeId, tf) {
   const cfg = getGHConfig();
   if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) throw new Error('GitHub no configurado');
-  const res = await fetch(ghApiUrlFor(cfg, capturaPath(tradeId)), { headers: ghHeaders(cfg) });
+  const res = await fetch(ghApiUrlFor(cfg, capturaPath(tradeId, tf)), { headers: ghHeaders(cfg) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return `data:image/jpeg;base64,${data.content.replace(/\n/g, '')}`;
 }
 
-// Borra la captura de un trade del repo (usado al eliminar el trade o al reemplazar la imagen).
-async function borrarCaptura(tradeId) {
+// Borra la captura de un trade en un timeframe dado (usado al reemplazar, quitar, o eliminar el trade).
+async function borrarCaptura(tradeId, tf) {
   const cfg = getGHConfig();
   if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) return false;
-  const path = capturaPath(tradeId);
+  const path = capturaPath(tradeId, tf);
   const existente = await fetch(ghApiUrlFor(cfg, path), { headers: ghHeaders(cfg) });
   if (!existente.ok) return false; // no había captura
   const { sha } = await existente.json();
   const res = await fetch(ghApiUrlFor(cfg, path), {
     method: 'DELETE', headers: ghHeaders(cfg),
-    body: JSON.stringify({ message: `captura: borrar trade ${tradeId}`, sha })
+    body: JSON.stringify({ message: `captura ${tf}: borrar trade ${tradeId}`, sha })
   });
   return res.ok;
+}
+
+// Borra todas las capturas registradas de un trade (recorre las claves presentes en t.capturas).
+async function borrarTodasCapturas(tradeId, capturas) {
+  const claves = Object.keys(capturas || {});
+  for (const tf of claves) {
+    try { await borrarCaptura(tradeId, tf); }
+    catch (e) { console.error(`Captura delete (${tf}):`, e); }
+  }
 }
 
 let trades = JSON.parse(localStorage.getItem('ot_0dte_trades') || '[]');
@@ -1544,7 +1558,7 @@ function saveTrade() {
     score: parseInt(scoreText[0]),
     notas: document.getElementById('f-notas').value.trim(),
     esPrueba: document.getElementById('f-prueba').checked,
-    capturaPath: null,
+    capturas: {},
     estado, primaOut, pnl,
   };
 
@@ -1626,7 +1640,7 @@ function renderHistorial() {
       <td>${pnlStr}</td>
       <td><span class="badge" style="background:${st.color+'22'};color:${st.color}">${st.label}</span></td>
       <td>${t.score!==undefined?t.score+'/5':'—'}</td>
-      <td>${t.capturaPath ? `<span onclick="verCaptura('${t.id}')" style="cursor:pointer;font-size:15px" title="Ver captura">📷</span>` : '—'}</td>
+      <td>${t.capturas && Object.keys(t.capturas).length ? `<span onclick="verCaptura('${t.id}')" style="cursor:pointer;font-size:15px" title="Ver captura(s)">📷${Object.keys(t.capturas).length>1?'×'+Object.keys(t.capturas).length:''}</span>` : '—'}</td>
       <td><button class="btn" style="padding:4px 10px;font-size:11px" onclick="openEdit('${t.id}')">Editar</button></td>
     </tr>`;
   }).join('');
@@ -1679,49 +1693,61 @@ function openEdit(id) {
     </div>
     <div id="em-pnl-preview" style="margin-top:4px"></div>
     <div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:var(--r)">
-      <label class="form-label">Captura de TradingView</label>
-      <input type="file" accept="image/*" id="em-captura-file" style="display:none" onchange="emSubirCaptura('${t.id}')">
-      <div id="em-captura-area" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        ${t.capturaPath
-          ? `<img id="em-captura-thumb" src="" alt="cargando..." style="max-width:120px;max-height:80px;border-radius:6px;cursor:pointer;object-fit:cover" onclick="verCaptura('${t.id}')">
-             <button class="btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('em-captura-file').click()">Reemplazar</button>
-             <button class="btn" style="padding:4px 10px;font-size:11px;color:var(--red)" onclick="emQuitarCaptura('${t.id}')">🗑 Quitar</button>`
-          : `<button class="btn" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('em-captura-file').click()">📷 Adjuntar captura</button>`}
+      <label class="form-label" style="margin-bottom:8px;display:block">Capturas de TradingView</label>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${CAPTURA_TIMEFRAMES.map(tf => {
+          const tieneCaptura = !!(t.capturas && t.capturas[tf.key]);
+          return `
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--muted);min-width:90px">${tf.label}</span>
+          <input type="file" accept="image/*" id="em-captura-file-${tf.key}" style="display:none" onchange="emSubirCaptura('${t.id}','${tf.key}')">
+          <div id="em-captura-area-${tf.key}" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${tieneCaptura
+              ? `<img id="em-captura-thumb-${tf.key}" src="" alt="cargando..." style="max-width:100px;max-height:70px;border-radius:6px;cursor:pointer;object-fit:cover" onclick="verCaptura('${t.id}','${tf.key}')">
+                 <button class="btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('em-captura-file-${tf.key}').click()">Reemplazar</button>
+                 <button class="btn" style="padding:4px 10px;font-size:11px;color:var(--red)" onclick="emQuitarCaptura('${t.id}','${tf.key}')">🗑 Quitar</button>`
+              : `<button class="btn" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('em-captura-file-${tf.key}').click()">📷 Adjuntar</button>`}
+          </div>
+        </div>`;
+        }).join('')}
       </div>
-      <div id="em-captura-status" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+      <div id="em-captura-status" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
     </div>
     <div style="margin-top:10px;padding:12px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--muted);font-family:var(--mono)">
       ${t.ticker} ${t.tipo} | Strike $${t.strike||'—'} | Prima $${t.prima} | Δ${t.delta||'—'} | ${t.hora||'—'} ET | ${fmtDate(t.fecha)}
     </div>`;
   document.getElementById('edit-modal').classList.add('open');
 
-  if (t.capturaPath) {
-    obtenerCaptura(t.id)
-      .then(dataUrl => { const img = document.getElementById('em-captura-thumb'); if (img) img.src = dataUrl; })
-      .catch(e => { console.error('Captura load:', e); const st = document.getElementById('em-captura-status'); if (st) st.textContent = 'No se pudo cargar la miniatura'; });
-  }
+  CAPTURA_TIMEFRAMES.forEach(tf => {
+    if (t.capturas && t.capturas[tf.key]) {
+      obtenerCaptura(t.id, tf.key)
+        .then(dataUrl => { const img = document.getElementById(`em-captura-thumb-${tf.key}`); if (img) img.src = dataUrl; })
+        .catch(e => { console.error(`Captura load (${tf.key}):`, e); const st = document.getElementById('em-captura-status'); if (st) st.textContent = `No se pudo cargar la miniatura (${tf.label})`; });
+    }
+  });
 }
 
-// Comprime y sube la captura elegida en el modal de Editar; actualiza capturaPath del trade.
-async function emSubirCaptura(tradeId) {
-  const fileInput = document.getElementById('em-captura-file');
+// Comprime y sube la captura elegida en el modal de Editar para un timeframe específico; actualiza t.capturas[tf].
+async function emSubirCaptura(tradeId, tf) {
+  const fileInput = document.getElementById(`em-captura-file-${tf}`);
   const file = fileInput.files[0];
   if (!file) return;
   const t = trades.find(x => x.id === tradeId);
   if (!t) return;
+  if (!t.capturas) t.capturas = {};
   const statusEl = document.getElementById('em-captura-status');
   statusEl.textContent = 'Comprimiendo y subiendo…';
   try {
     const { base64, dataUrl } = await comprimirImagen(file);
-    await subirCaptura(tradeId, base64);
-    t.capturaPath = capturaPath(tradeId);
+    await subirCaptura(tradeId, tf, base64);
+    t.capturas[tf] = capturaPath(tradeId, tf);
     save();
     statusEl.textContent = 'Captura guardada ✓';
-    const area = document.getElementById('em-captura-area');
+    const area = document.getElementById(`em-captura-area-${tf}`);
     area.innerHTML = `
-      <img id="em-captura-thumb" src="${dataUrl}" alt="captura" style="max-width:120px;max-height:80px;border-radius:6px;cursor:pointer;object-fit:cover" onclick="verCaptura('${tradeId}')">
-      <button class="btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('em-captura-file').click()">Reemplazar</button>
-      <button class="btn" style="padding:4px 10px;font-size:11px;color:var(--red)" onclick="emQuitarCaptura('${tradeId}')">🗑 Quitar</button>`;
+      <img id="em-captura-thumb-${tf}" src="${dataUrl}" alt="captura" style="max-width:100px;max-height:70px;border-radius:6px;cursor:pointer;object-fit:cover" onclick="verCaptura('${tradeId}','${tf}')">
+      <button class="btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('em-captura-file-${tf}').click()">Reemplazar</button>
+      <button class="btn" style="padding:4px 10px;font-size:11px;color:var(--red)" onclick="emQuitarCaptura('${tradeId}','${tf}')">🗑 Quitar</button>`;
     renderHistorial();
   } catch (e) {
     console.error('Captura upload:', e);
@@ -1731,40 +1757,60 @@ async function emSubirCaptura(tradeId) {
   }
 }
 
-// Quita la captura del trade (borra el archivo en GitHub y limpia capturaPath).
-async function emQuitarCaptura(tradeId) {
-  if (!confirm('¿Quitar la captura de este trade?')) return;
+// Quita la captura de un timeframe específico (borra el archivo en GitHub y limpia t.capturas[tf]).
+async function emQuitarCaptura(tradeId, tf) {
+  if (!confirm('¿Quitar esta captura?')) return;
   const t = trades.find(x => x.id === tradeId);
   if (!t) return;
   const statusEl = document.getElementById('em-captura-status');
   statusEl.textContent = 'Quitando…';
   try {
-    await borrarCaptura(tradeId);
+    await borrarCaptura(tradeId, tf);
   } catch (e) {
     console.error('Captura delete:', e);
   }
-  t.capturaPath = null;
+  if (t.capturas) delete t.capturas[tf];
   save();
   statusEl.textContent = '';
-  document.getElementById('em-captura-area').innerHTML =
-    `<button class="btn" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('em-captura-file').click()">📷 Adjuntar captura</button>`;
+  document.getElementById(`em-captura-area-${tf}`).innerHTML =
+    `<button class="btn" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('em-captura-file-${tf}').click()">📷 Adjuntar</button>`;
   renderHistorial();
 }
 
-// Muestra la captura de un trade en un lightbox simple.
-async function verCaptura(tradeId) {
+// Muestra la(s) captura(s) de un trade en un lightbox con pestañas por timeframe.
+// tfInicial (opcional) preselecciona la pestaña; si no se pasa, se abre en la primera captura disponible.
+async function verCaptura(tradeId, tfInicial) {
+  const t = trades.find(x => x.id === tradeId);
+  const claves = t && t.capturas ? CAPTURA_TIMEFRAMES.filter(tf => t.capturas[tf.key]) : [];
+  if (!claves.length) return;
+  let activa = tfInicial && t.capturas[tfInicial] ? tfInicial : claves[0].key;
+
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
-  overlay.innerHTML = `<div style="color:var(--muted);font-family:var(--mono)">Cargando captura…</div>`;
-  overlay.onclick = () => overlay.remove();
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px';
   document.body.appendChild(overlay);
-  try {
-    const dataUrl = await obtenerCaptura(tradeId);
-    overlay.innerHTML = `<img src="${dataUrl}" style="max-width:92vw;max-height:92vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5)">`;
-  } catch (e) {
-    console.error('Captura view:', e);
-    overlay.innerHTML = `<div style="color:var(--red);font-family:var(--mono)">Error al cargar la captura: ${e.message}</div>`;
+
+  function render() {
+    const tabs = claves.map(tf => `
+      <span onclick="event.stopPropagation();window.__verCapturaTab('${tf.key}')"
+        style="cursor:pointer;padding:6px 14px;border-radius:6px;font-family:var(--mono);font-size:12px;
+        background:${tf.key===activa?'var(--accent)':'rgba(255,255,255,.1)'};color:${tf.key===activa?'#000':'#fff'}">${tf.label}</span>`).join('');
+    overlay.innerHTML = `
+      <div style="display:flex;gap:8px">${tabs}</div>
+      <div id="em-lightbox-img" style="color:var(--muted);font-family:var(--mono)">Cargando captura…</div>`;
+    overlay.onclick = () => overlay.remove();
+    obtenerCaptura(tradeId, activa)
+      .then(dataUrl => {
+        const box = document.getElementById('em-lightbox-img');
+        if (box) box.outerHTML = `<img id="em-lightbox-img" src="${dataUrl}" style="max-width:88vw;max-height:80vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5)">`;
+      })
+      .catch(e => {
+        console.error('Captura view:', e);
+        const box = document.getElementById('em-lightbox-img');
+        if (box) box.textContent = `Error al cargar la captura: ${e.message}`;
+      });
   }
+  window.__verCapturaTab = (tf) => { activa = tf; render(); };
+  render();
 }
 
 function emCalcPnl(primaIn, contratos) {
@@ -1792,9 +1838,9 @@ function saveEditTrade() {
 async function deleteTrade() {
   if (!confirm('¿Eliminar este trade?')) return;
   const t = trades.find(x => x.id === editingId);
-  if (t && t.capturaPath) {
-    try { await borrarCaptura(t.id); }
-    catch (e) { console.error('Captura delete on trade removal:', e); notify('Trade eliminado, pero la captura quedó huérfana en GitHub', 'amber'); }
+  if (t && t.capturas && Object.keys(t.capturas).length) {
+    try { await borrarTodasCapturas(t.id, t.capturas); }
+    catch (e) { console.error('Captura delete on trade removal:', e); notify('Trade eliminado, pero alguna captura quedó huérfana en GitHub', 'amber'); }
   }
   trades = trades.filter(x=>x.id!==editingId);
   save(); closeModal(); renderHistorial(); notify('Trade eliminado'); updateSidebar();
