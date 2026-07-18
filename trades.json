@@ -287,7 +287,7 @@
     "iv": null,
     "rsi": null,
     "score": 0,
-    "notas": "Importado de TOS - cerrado via Stop Loss automático",
+    "notas": "Importado de TOS - cerrado via Stop Loss automático. Rte trade se probo la resistancia de VWAP, emas estaban en tedencia bajista marcando PUT pero VWAP estaba por debajo del precio",
     "esPrueba": true,
     "estado": "perdida",
     "primaOut": 1.13,
