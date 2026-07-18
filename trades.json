@@ -17,7 +17,10 @@
     "primaOut": 2.03,
     "pnl": 53,
     "esPrueba": false,
-    "rsi": null
+    "rsi": null,
+    "capturas": {
+      "m15": "capturas/mqzbd5ge2w20_m15.jpg"
+    }
   },
   {
     "id": "mr0w8oofzgq0",
