@@ -252,5 +252,25 @@
     "estado": "perdida",
     "primaOut": 0.86,
     "pnl": -37
+  },
+  {
+    "id": "mrpnydulzn0i",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-17",
+    "hora": "10:17",
+    "horaOut": "10:32",
+    "strike": 747,
+    "delta": null,
+    "prima": 1.75,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "notas": "Importado de TOS - cerrado via Stop Loss automático",
+    "esPrueba": false,
+    "estado": "perdida",
+    "primaOut": 1.19,
+    "pnl": -56
   }
 ]
