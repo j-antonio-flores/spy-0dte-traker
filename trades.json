@@ -252,24 +252,5 @@
     "estado": "perdida",
     "primaOut": 0.86,
     "pnl": -37
-  },
-  {
-    "id": "mrp24mhx7sf1",
-    "ticker": "SPY",
-    "tipo": "CALL",
-    "fecha": "2026-07-17",
-    "hora": "10:17",
-    "horaOut": "10:32",
-    "strike": null,
-    "delta": 0.51,
-    "prima": 1.75,
-    "contratos": 1,
-    "iv": 0.34,
-    "score": 4,
-    "notas": "EMA 9 > 21 en grafica de 1 minutos, se mete CALL basaod en script",
-    "esPrueba": false,
-    "estado": "perdida",
-    "primaOut": 1.19,
-    "pnl": -56
   }
 ]
