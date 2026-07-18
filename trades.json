@@ -84,7 +84,10 @@
     "notas": "EMA 20 >",
     "estado": "perdida",
     "primaOut": 1.12,
-    "pnl": -53
+    "pnl": -53,
+    "capturas": {
+      "m1": "capturas/mr3qsebqe80u_m1.jpg"
+    }
   },
   {
     "id": "mrau1fyrvt79",
