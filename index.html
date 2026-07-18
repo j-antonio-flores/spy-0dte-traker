@@ -485,11 +485,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                 <tr>
                   <th>Fecha</th><th>Hora ET</th><th>Ticker</th><th>Tipo</th>
                   <th>Strike</th><th>Delta</th><th>Prima in</th>
-                  <th>Prima out</th><th>P&amp;L</th><th>Estado</th><th>Score</th><th></th>
+                  <th>Prima out</th><th>P&amp;L</th><th>Estado</th><th>Score</th><th>Captura</th><th></th>
                 </tr>
               </thead>
               <tbody id="hist-body">
-                <tr><td colspan="12"><div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin trades</div></div></td></tr>
+                <tr><td colspan="13"><div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin trades</div></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -779,7 +779,10 @@ function saveGHConfig(cfg) {
   localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(cfg));
 }
 function ghApiUrl(cfg) {
-  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path || 'trades.json'}`;
+  return ghApiUrlFor(cfg, cfg.path || 'trades.json');
+}
+function ghApiUrlFor(cfg, path) {
+  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`;
 }
 function ghHeaders(cfg) {
   return {
@@ -858,6 +861,98 @@ async function saveToGitHub() {
 }
 
 function save() { saveToGitHub(); }
+
+/* ═══════════════════════════════════════════════════
+   CAPTURAS DE TRADINGVIEW — capturas/{tradeId}.jpg en el repo
+═══════════════════════════════════════════════════ */
+const CAPTURA_MAX_LADO   = 1280;
+const CAPTURA_CALIDAD    = 0.7;
+const CAPTURA_MAX_BYTES  = 900 * 1024; // ~900KB en base64, margen bajo el límite práctico de ~1MB
+
+function capturaPath(tradeId) { return `capturas/${tradeId}.jpg`; }
+
+// Comprime un File de imagen a base64 JPEG (sin prefijo data:), redimensionando si excede CAPTURA_MAX_LADO.
+// Si el resultado sigue pesando de más, reduce calidad en pasos hasta caber en CAPTURA_MAX_BYTES.
+function comprimirImagen(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('El archivo no es una imagen válida'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > CAPTURA_MAX_LADO) { height = Math.round(height * CAPTURA_MAX_LADO / width); width = CAPTURA_MAX_LADO; }
+        else if (height > CAPTURA_MAX_LADO) { width = Math.round(width * CAPTURA_MAX_LADO / height); height = CAPTURA_MAX_LADO; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+        let calidad = CAPTURA_CALIDAD;
+        let dataUrl = canvas.toDataURL('image/jpeg', calidad);
+        let base64  = dataUrl.split(',')[1];
+        let intentos = 0;
+        while (base64.length > CAPTURA_MAX_BYTES && calidad > 0.3 && intentos < 5) {
+          calidad -= 0.1;
+          dataUrl = canvas.toDataURL('image/jpeg', calidad);
+          base64  = dataUrl.split(',')[1];
+          intentos++;
+        }
+        resolve({ base64, dataUrl });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Sube (o reemplaza) la captura de un trade. Si ya existe, primero obtiene su sha para poder sobrescribir.
+async function subirCaptura(tradeId, base64) {
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) throw new Error('GitHub no configurado');
+  const path = capturaPath(tradeId);
+  let sha = null;
+  try {
+    const existente = await fetch(ghApiUrlFor(cfg, path), { headers: ghHeaders(cfg) });
+    if (existente.ok) sha = (await existente.json()).sha;
+  } catch { /* no existe aún, sin problema */ }
+
+  const body = {
+    message: `captura: trade ${tradeId} — ${today()}`,
+    content: base64,
+    ...(sha ? { sha } : {})
+  };
+  const res = await fetch(ghApiUrlFor(cfg, path), {
+    method: 'PUT', headers: ghHeaders(cfg), body: JSON.stringify(body)
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.message || `HTTP ${res.status}`); }
+  return true;
+}
+
+// Obtiene la captura de un trade como data-URL (repo privado → hay que pasar por Contents API con token).
+async function obtenerCaptura(tradeId) {
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) throw new Error('GitHub no configurado');
+  const res = await fetch(ghApiUrlFor(cfg, capturaPath(tradeId)), { headers: ghHeaders(cfg) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return `data:image/jpeg;base64,${data.content.replace(/\n/g, '')}`;
+}
+
+// Borra la captura de un trade del repo (usado al eliminar el trade o al reemplazar la imagen).
+async function borrarCaptura(tradeId) {
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) return false;
+  const path = capturaPath(tradeId);
+  const existente = await fetch(ghApiUrlFor(cfg, path), { headers: ghHeaders(cfg) });
+  if (!existente.ok) return false; // no había captura
+  const { sha } = await existente.json();
+  const res = await fetch(ghApiUrlFor(cfg, path), {
+    method: 'DELETE', headers: ghHeaders(cfg),
+    body: JSON.stringify({ message: `captura: borrar trade ${tradeId}`, sha })
+  });
+  return res.ok;
+}
 
 let trades = JSON.parse(localStorage.getItem('ot_0dte_trades') || '[]');
 let editingId = null;
@@ -1449,6 +1544,7 @@ function saveTrade() {
     score: parseInt(scoreText[0]),
     notas: document.getElementById('f-notas').value.trim(),
     esPrueba: document.getElementById('f-prueba').checked,
+    capturaPath: null,
     estado, primaOut, pnl,
   };
 
@@ -1511,7 +1607,7 @@ function renderHistorial() {
 
   const tbody = document.getElementById('hist-body');
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="12"><div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin resultados</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13"><div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin resultados</div></div></td></tr>';
     return;
   }
   tbody.innerHTML = filtered.map(t => {
@@ -1530,6 +1626,7 @@ function renderHistorial() {
       <td>${pnlStr}</td>
       <td><span class="badge" style="background:${st.color+'22'};color:${st.color}">${st.label}</span></td>
       <td>${t.score!==undefined?t.score+'/5':'—'}</td>
+      <td>${t.capturaPath ? `<span onclick="verCaptura('${t.id}')" style="cursor:pointer;font-size:15px" title="Ver captura">📷</span>` : '—'}</td>
       <td><button class="btn" style="padding:4px 10px;font-size:11px" onclick="openEdit('${t.id}')">Editar</button></td>
     </tr>`;
   }).join('');
@@ -1581,10 +1678,93 @@ function openEdit(id) {
         <input class="form-control" id="em-hora-out" type="time" value="${t.horaOut||''}"></div>
     </div>
     <div id="em-pnl-preview" style="margin-top:4px"></div>
+    <div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:var(--r)">
+      <label class="form-label">Captura de TradingView</label>
+      <input type="file" accept="image/*" id="em-captura-file" style="display:none" onchange="emSubirCaptura('${t.id}')">
+      <div id="em-captura-area" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        ${t.capturaPath
+          ? `<img id="em-captura-thumb" src="" alt="cargando..." style="max-width:120px;max-height:80px;border-radius:6px;cursor:pointer;object-fit:cover" onclick="verCaptura('${t.id}')">
+             <button class="btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('em-captura-file').click()">Reemplazar</button>
+             <button class="btn" style="padding:4px 10px;font-size:11px;color:var(--red)" onclick="emQuitarCaptura('${t.id}')">🗑 Quitar</button>`
+          : `<button class="btn" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('em-captura-file').click()">📷 Adjuntar captura</button>`}
+      </div>
+      <div id="em-captura-status" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+    </div>
     <div style="margin-top:10px;padding:12px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--muted);font-family:var(--mono)">
       ${t.ticker} ${t.tipo} | Strike $${t.strike||'—'} | Prima $${t.prima} | Δ${t.delta||'—'} | ${t.hora||'—'} ET | ${fmtDate(t.fecha)}
     </div>`;
   document.getElementById('edit-modal').classList.add('open');
+
+  if (t.capturaPath) {
+    obtenerCaptura(t.id)
+      .then(dataUrl => { const img = document.getElementById('em-captura-thumb'); if (img) img.src = dataUrl; })
+      .catch(e => { console.error('Captura load:', e); const st = document.getElementById('em-captura-status'); if (st) st.textContent = 'No se pudo cargar la miniatura'; });
+  }
+}
+
+// Comprime y sube la captura elegida en el modal de Editar; actualiza capturaPath del trade.
+async function emSubirCaptura(tradeId) {
+  const fileInput = document.getElementById('em-captura-file');
+  const file = fileInput.files[0];
+  if (!file) return;
+  const t = trades.find(x => x.id === tradeId);
+  if (!t) return;
+  const statusEl = document.getElementById('em-captura-status');
+  statusEl.textContent = 'Comprimiendo y subiendo…';
+  try {
+    const { base64, dataUrl } = await comprimirImagen(file);
+    await subirCaptura(tradeId, base64);
+    t.capturaPath = capturaPath(tradeId);
+    save();
+    statusEl.textContent = 'Captura guardada ✓';
+    const area = document.getElementById('em-captura-area');
+    area.innerHTML = `
+      <img id="em-captura-thumb" src="${dataUrl}" alt="captura" style="max-width:120px;max-height:80px;border-radius:6px;cursor:pointer;object-fit:cover" onclick="verCaptura('${tradeId}')">
+      <button class="btn" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('em-captura-file').click()">Reemplazar</button>
+      <button class="btn" style="padding:4px 10px;font-size:11px;color:var(--red)" onclick="emQuitarCaptura('${tradeId}')">🗑 Quitar</button>`;
+    renderHistorial();
+  } catch (e) {
+    console.error('Captura upload:', e);
+    statusEl.textContent = `Error al subir: ${e.message}`;
+  } finally {
+    fileInput.value = '';
+  }
+}
+
+// Quita la captura del trade (borra el archivo en GitHub y limpia capturaPath).
+async function emQuitarCaptura(tradeId) {
+  if (!confirm('¿Quitar la captura de este trade?')) return;
+  const t = trades.find(x => x.id === tradeId);
+  if (!t) return;
+  const statusEl = document.getElementById('em-captura-status');
+  statusEl.textContent = 'Quitando…';
+  try {
+    await borrarCaptura(tradeId);
+  } catch (e) {
+    console.error('Captura delete:', e);
+  }
+  t.capturaPath = null;
+  save();
+  statusEl.textContent = '';
+  document.getElementById('em-captura-area').innerHTML =
+    `<button class="btn" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('em-captura-file').click()">📷 Adjuntar captura</button>`;
+  renderHistorial();
+}
+
+// Muestra la captura de un trade en un lightbox simple.
+async function verCaptura(tradeId) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  overlay.innerHTML = `<div style="color:var(--muted);font-family:var(--mono)">Cargando captura…</div>`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+  try {
+    const dataUrl = await obtenerCaptura(tradeId);
+    overlay.innerHTML = `<img src="${dataUrl}" style="max-width:92vw;max-height:92vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5)">`;
+  } catch (e) {
+    console.error('Captura view:', e);
+    overlay.innerHTML = `<div style="color:var(--red);font-family:var(--mono)">Error al cargar la captura: ${e.message}</div>`;
+  }
 }
 
 function emCalcPnl(primaIn, contratos) {
@@ -1609,8 +1789,13 @@ function saveEditTrade() {
   save(); closeModal(); renderHistorial(); notify('Trade actualizado ✓','green'); updateSidebar();
 }
 
-function deleteTrade() {
+async function deleteTrade() {
   if (!confirm('¿Eliminar este trade?')) return;
+  const t = trades.find(x => x.id === editingId);
+  if (t && t.capturaPath) {
+    try { await borrarCaptura(t.id); }
+    catch (e) { console.error('Captura delete on trade removal:', e); notify('Trade eliminado, pero la captura quedó huérfana en GitHub', 'amber'); }
+  }
   trades = trades.filter(x=>x.id!==editingId);
   save(); closeModal(); renderHistorial(); notify('Trade eliminado'); updateSidebar();
 }
