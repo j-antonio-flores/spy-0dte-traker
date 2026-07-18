@@ -272,5 +272,25 @@
     "estado": "perdida",
     "primaOut": 1.19,
     "pnl": -56
+  },
+  {
+    "id": "mrpnyzbb3asc",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-07-17",
+    "hora": "10:59",
+    "horaOut": "11:30",
+    "strike": 745,
+    "delta": null,
+    "prima": 1.62,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "notas": "Importado de TOS - cerrado via Stop Loss automático",
+    "esPrueba": true,
+    "estado": "perdida",
+    "primaOut": 1.13,
+    "pnl": -49
   }
 ]
