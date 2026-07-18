@@ -267,7 +267,7 @@
     "iv": null,
     "rsi": null,
     "score": 0,
-    "notas": "Importado de TOS - cerrado via Stop Loss automático",
+    "notas": "Importado de TOS - cerrado via Stop Loss automÃ¡tico",
     "esPrueba": false,
     "estado": "perdida",
     "primaOut": 1.19,
@@ -287,10 +287,13 @@
     "iv": null,
     "rsi": null,
     "score": 0,
-    "notas": "Importado de TOS - cerrado via Stop Loss automático. Rte trade se probo la resistancia de VWAP, emas estaban en tedencia bajista marcando PUT pero VWAP estaba por debajo del precio",
+    "notas": "Importado de TOS - cerrado via Stop Loss automÃ¡tico. Rte trade se probo la resistancia de VWAP, emas estaban en tedencia bajista marcando PUT pero VWAP estaba por debajo del precio",
     "esPrueba": true,
     "estado": "perdida",
     "primaOut": 1.13,
-    "pnl": -49
+    "pnl": -49,
+    "capturas": {
+      "m15": "capturas/mrpnyzbb3asc_m15.jpg"
+    }
   }
 ]
