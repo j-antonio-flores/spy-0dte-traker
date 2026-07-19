@@ -175,7 +175,9 @@
     "estado": "ganancia",
     "primaOut": 1.78,
     "pnl": 49,
-    "capturas": {}
+    "capturas": {
+      "m1": "capturas/mrdsc0q7zzo0_m1.jpg"
+    }
   },
   {
     "id": "mrjbt1b4n21y",
