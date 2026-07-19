@@ -169,7 +169,7 @@
     "delta": 0.47,
     "prima": 1.29,
     "contratos": 1,
-    "iv": null,
+    "iv": 0.72,
     "score": 5,
     "notas": "Se realizo un segunto trade, sugerido por el script, con 4/5 ",
     "estado": "ganancia",
@@ -180,7 +180,7 @@
       "m15": "capturas/mrdsc0q7zzo0_m15.jpg"
     },
     "esPrueba": false,
-    "rsi": null
+    "rsi": 48.06
   },
   {
     "id": "mrjbt1b4n21y",
