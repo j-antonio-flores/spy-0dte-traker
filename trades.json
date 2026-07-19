@@ -252,7 +252,10 @@
     "notas": "EMA 9 > precio, indicadores 4/5, ratificado con tendencia 3 velas seguidaas. script tambien marca put. Volumen tn TOS marcaba mayor volumen en CALL",
     "estado": "ganancia",
     "primaOut": 1.59,
-    "pnl": 37
+    "pnl": 37,
+    "capturas": {
+      "m15": "capturas/mrkqmtedeuzm_m15.jpg"
+    }
   },
   {
     "id": "mrm63cwycu9v",
