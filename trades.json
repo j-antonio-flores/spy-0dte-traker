@@ -276,7 +276,10 @@
     "notas": "Ema 9 < Ema 21 < precio, TOS volumen marca tendencia call, se ve el mercado chopy pero se mete trade arriegado como CALL, la grafica del script marcabz CALL tambien",
     "estado": "perdida",
     "primaOut": 0.72,
-    "pnl": -33
+    "pnl": -33,
+    "capturas": {
+      "m1": "capturas/mrm63cwycu9v_m1.jpg"
+    }
   },
   {
     "id": "mrmpx00zpy4h",
