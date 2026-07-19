@@ -178,7 +178,9 @@
     "capturas": {
       "m1": "capturas/mrdsc0q7zzo0_m1.jpg",
       "m15": "capturas/mrdsc0q7zzo0_m15.jpg"
-    }
+    },
+    "esPrueba": false,
+    "rsi": null
   },
   {
     "id": "mrjbt1b4n21y",
