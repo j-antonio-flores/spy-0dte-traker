@@ -103,7 +103,7 @@
     "delta": 0.46,
     "prima": 1.62,
     "contratos": 1,
-    "iv": null,
+    "iv": 0.2,
     "score": 5,
     "notas": "EMA's por encima del precio en grafica de 15 min, tendencia hacia abajo, y el VMWAP tambien por encima",
     "estado": "ganancia",
@@ -114,7 +114,7 @@
       "m1": "capturas/mrau1fyrvt79_m1.jpg"
     },
     "esPrueba": false,
-    "rsi": null
+    "rsi": 39.35
   },
   {
     "id": "mrc6o2gf6k6k",
@@ -132,7 +132,9 @@
     "notas": "EMA 9 < EMA 21 tendecia a la baja en grafiuca de 15 mins, con tres velas completadas con perdida, RSI no cumplio, se require",
     "estado": "ganancia",
     "primaOut": 2.28,
-    "pnl": 53
+    "pnl": 53,
+    "esPrueba": false,
+    "rsi": null
   },
   {
     "id": "mrdlznwo115r",
@@ -294,7 +296,7 @@
     "iv": null,
     "rsi": null,
     "score": 0,
-    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂÃÂ¡tico",
+    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂ¡tico",
     "esPrueba": false,
     "estado": "perdida",
     "primaOut": 1.19,
@@ -314,7 +316,7 @@
     "iv": null,
     "rsi": null,
     "score": 0,
-    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂÃÂ¡tico. Rte trade se probo la resistancia de VWAP, emas estaban en tedencia bajista marcando PUT pero VWAP estaba por debajo del precio",
+    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂ¡tico. Rte trade se probo la resistancia de VWAP, emas estaban en tedencia bajista marcando PUT pero VWAP estaba por debajo del precio",
     "esPrueba": true,
     "estado": "perdida",
     "primaOut": 1.13,
