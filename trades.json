@@ -230,7 +230,8 @@
     "primaOut": 0.89,
     "pnl": -39,
     "capturas": {
-      "m15": "capturas/mrjcmyhwwovu_m15.jpg"
+      "m15": "capturas/mrjcmyhwwovu_m15.jpg",
+      "m1": "capturas/mrjcmyhwwovu_m1.jpg"
     },
     "esPrueba": false,
     "rsi": null
