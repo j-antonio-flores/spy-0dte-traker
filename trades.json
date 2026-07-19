@@ -280,7 +280,9 @@
     "capturas": {
       "m1": "capturas/mrm63cwycu9v_m1.jpg",
       "m15": "capturas/mrm63cwycu9v_m15.jpg"
-    }
+    },
+    "esPrueba": false,
+    "rsi": null
   },
   {
     "id": "mrmpx00zpy4h",
