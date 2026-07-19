@@ -156,7 +156,10 @@
     "notas": "En timneframe de 1 minuto mostraba tendecia a la baja",
     "estado": "perdida",
     "primaOut": 1,
-    "pnl": -45
+    "pnl": -45,
+    "capturas": {
+      "m15": "capturas/mrdlznwo115r_m15.jpg"
+    }
   },
   {
     "id": "mrdsc0q7zzo0",
