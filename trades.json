@@ -301,7 +301,10 @@
     "estado": "perdida",
     "primaOut": 0.9,
     "pnl": -48,
-    "esPrueba": true
+    "esPrueba": true,
+    "capturas": {
+      "m1": "capturas/mrmpx00zpy4h_m1.jpg"
+    }
   },
   {
     "id": "mrnquto0u53b",
