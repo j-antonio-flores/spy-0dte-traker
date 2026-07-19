@@ -350,7 +350,10 @@
     "esPrueba": false,
     "estado": "perdida",
     "primaOut": 1.19,
-    "pnl": -56
+    "pnl": -56,
+    "capturas": {
+      "m1": "capturas/mrpnydulzn0i_m1.jpg"
+    }
   },
   {
     "id": "mrpnyzbb3asc",
