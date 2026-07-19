@@ -256,7 +256,9 @@
     "capturas": {
       "m15": "capturas/mrkqmtedeuzm_m15.jpg",
       "m1": "capturas/mrkqmtedeuzm_m1.jpg"
-    }
+    },
+    "esPrueba": false,
+    "rsi": null
   },
   {
     "id": "mrm63cwycu9v",
