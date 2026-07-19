@@ -134,7 +134,10 @@
     "primaOut": 2.28,
     "pnl": 53,
     "esPrueba": false,
-    "rsi": null
+    "rsi": null,
+    "capturas": {
+      "m1": "capturas/mrc6o2gf6k6k_m1.jpg"
+    }
   },
   {
     "id": "mrdlznwo115r",
