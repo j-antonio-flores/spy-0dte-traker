@@ -1259,6 +1259,26 @@ function buildDistChart() {
 ═══════════════════════════════════════════════════ */
 function toggleCheck(el) { el.classList.toggle('on'); }
 
+// Labels del checklist rápido, en el mismo orden que los toggles de #quick-checks.
+const CHECKLIST_LABELS = [
+  'EMA 9 > EMA 21 + precio sobre VWAP',
+  'RSI 35–70 (5 min)',
+  'BB Width < 3.5% y sin expansión',
+  'Entrada antes 11:30 AM ET',
+  'No es Lun / Mié / Vie con riesgo',
+];
+
+// Lee el ESTADO FINAL de los toggles (no acumula por clic) y arma el bloque de texto + el detalle estructurado.
+// Llamar esto solo al guardar el trade evita duplicados sin importar cuántas veces se prendió/apagó cada criterio.
+function buildChecklistNota() {
+  const toggles  = document.querySelectorAll('#quick-checks .toggle');
+  const estados  = [...toggles].map(t => t.classList.contains('on'));
+  const score    = estados.filter(Boolean).length;
+  const lineas   = CHECKLIST_LABELS.map((label, i) => `${estados[i] ? '✓' : '✗'} ${label}`);
+  const texto    = `Checklist (${score}/5):\n${lineas.join('\n')}`;
+  return { texto, estados, score };
+}
+
 function updateFullChecklist() {
   const toggles = document.querySelectorAll('#page-checklist .toggle');
   const score   = [...toggles].filter(t=>t.classList.contains('on')).length;
@@ -1545,6 +1565,11 @@ function saveTrade() {
   const hora      = document.getElementById('f-hora').value;
   const horaOut   = document.getElementById('f-hora-out').value;
 
+  // Estado final del checklist al momento de guardar (no acumulado por clic, así no se duplica).
+  const { texto: checklistTexto, estados: checklistEstados } = buildChecklistNota();
+  const notasManual = document.getElementById('f-notas').value.trim();
+  const notasFinal   = notasManual ? `${checklistTexto}\n\n${notasManual}` : checklistTexto;
+
   const trade = {
     id: uid(),
     ticker, tipo: document.getElementById('f-tipo').value,
@@ -1556,7 +1581,8 @@ function saveTrade() {
     iv:    parseFloat(document.getElementById('f-iv').value)||null,
     rsi:   parseFloat(document.getElementById('f-rsi').value)||null,
     score: parseInt(scoreText[0]),
-    notas: document.getElementById('f-notas').value.trim(),
+    checklistDetalle: checklistEstados,
+    notas: notasFinal,
     esPrueba: document.getElementById('f-prueba').checked,
     capturas: {},
     estado, primaOut, pnl,
