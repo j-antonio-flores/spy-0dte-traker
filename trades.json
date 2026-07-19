@@ -127,14 +127,14 @@
     "delta": 0.47,
     "prima": 1.75,
     "contratos": 1,
-    "iv": null,
+    "iv": 0.25,
     "score": 2,
     "notas": "EMA 9 < EMA 21 tendecia a la baja en grafiuca de 15 mins, con tres velas completadas con perdida, RSI no cumplio, se require",
     "estado": "ganancia",
     "primaOut": 2.28,
     "pnl": 53,
     "esPrueba": false,
-    "rsi": null,
+    "rsi": 44.12,
     "capturas": {
       "m1": "capturas/mrc6o2gf6k6k_m1.jpg",
       "m15": "capturas/mrc6o2gf6k6k_m15.jpg"
