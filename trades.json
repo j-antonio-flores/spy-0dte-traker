@@ -208,7 +208,9 @@
     "capturas": {
       "m15": "capturas/mrjbt1b4n21y_m15.jpg",
       "m1": "capturas/mrjbt1b4n21y_m1.jpg"
-    }
+    },
+    "esPrueba": false,
+    "rsi": null
   },
   {
     "id": "mrjcmyhwwovu",
