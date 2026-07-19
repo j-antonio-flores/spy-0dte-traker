@@ -199,7 +199,7 @@
     "delta": 0.42,
     "prima": 1.11,
     "contratos": 1,
-    "iv": null,
+    "iv": 0.35,
     "score": 4,
     "notas": "En este trade segui el script, el cual marcaba un call on 4/5, para probar la eficacia, lo revise en el timeframe de 15min y en el de 1 minuto, sin embargo se registro perdida, como nota el volumen en TOS marcaba un  put mayoritariamente, para verifica el script las deciciones las tomo en time frame de un minuto sin embargo el script toma como referancia 15 minutos",
     "estado": "perdida",
@@ -210,7 +210,7 @@
       "m1": "capturas/mrjbt1b4n21y_m1.jpg"
     },
     "esPrueba": false,
-    "rsi": null
+    "rsi": 48.06
   },
   {
     "id": "mrjcmyhwwovu",
