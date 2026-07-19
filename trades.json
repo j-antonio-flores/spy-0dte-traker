@@ -319,7 +319,7 @@
     "delta": 0.54,
     "prima": 1.23,
     "contratos": 1,
-    "iv": 0.19,
+    "iv": 0.17,
     "score": 5,
     "notas": "EMA 9 > 21, precio esta por encima del EMA 9, casi en el soporte, no hay tendencia de tres velas sin embargo se mete CALL",
     "esPrueba": false,
@@ -330,7 +330,7 @@
       "m1": "capturas/mrnquto0u53b_m1.jpg",
       "m15": "capturas/mrnquto0u53b_m15.jpg"
     },
-    "rsi": null
+    "rsi": 66.36
   },
   {
     "id": "mrpnydulzn0i",
