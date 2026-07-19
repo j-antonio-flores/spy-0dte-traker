@@ -247,7 +247,7 @@
     "delta": 0.41,
     "prima": 1.22,
     "contratos": 1,
-    "iv": null,
+    "iv": 0.12,
     "score": 4,
     "notas": "EMA 9 > precio, indicadores 4/5, ratificado con tendencia 3 velas seguidaas. script tambien marca put. Volumen tn TOS marcaba mayor volumen en CALL",
     "estado": "ganancia",
@@ -258,7 +258,7 @@
       "m1": "capturas/mrkqmtedeuzm_m1.jpg"
     },
     "esPrueba": false,
-    "rsi": null
+    "rsi": 48.71
   },
   {
     "id": "mrm63cwycu9v",
