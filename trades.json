@@ -232,7 +232,9 @@
     "capturas": {
       "m15": "capturas/mrjcmyhwwovu_m15.jpg",
       "m1": "capturas/mrjcmyhwwovu_m1.jpg"
-    }
+    },
+    "esPrueba": false,
+    "rsi": null
   },
   {
     "id": "mrkqmtedeuzm",
