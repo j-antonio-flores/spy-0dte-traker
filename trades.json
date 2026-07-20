@@ -379,5 +379,26 @@
       "m1": "capturas/mrpnyzbb3asc_m1.jpg",
       "m15": "capturas/mrpnyzbb3asc_m15.jpg"
     }
+  },
+  {
+    "id": "mrtrkbxh0p8i",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-07-20",
+    "hora": "10:37",
+    "horaOut": "10:53",
+    "strike": 745,
+    "delta": null,
+    "prima": 1.34,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 4,
+    "notas": "Importado de TOS - cerrado via Take Profit / límite",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "ganancia",
+    "primaOut": 1.78,
+    "pnl": 44
   }
 ]
