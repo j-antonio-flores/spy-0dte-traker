@@ -397,7 +397,8 @@
     "notas": "Importado de TOS - cerrado via Take Profit / límite",
     "esPrueba": false,
     "capturas": {
-      "m15": "capturas/mrtrkbxh0p8i_m15.jpg"
+      "m15": "capturas/mrtrkbxh0p8i_m15.jpg",
+      "m1": "capturas/mrtrkbxh0p8i_m1.jpg"
     },
     "estado": "ganancia",
     "primaOut": 1.78,
