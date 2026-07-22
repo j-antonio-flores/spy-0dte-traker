@@ -639,6 +639,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
           <button class="tab" onclick="showReportTab('por-hora')">Por franja horaria</button>
           <button class="tab" onclick="showReportTab('por-mes')">Por mes</button>
           <button class="tab" onclick="showReportTab('por-ticker')">Por ticker</button>
+          <button class="tab" onclick="showReportTab('mfe')">MFE / SL-TP</button>
           <button class="tab" onclick="showReportTab('comparar')">Comparar</button>
         </div>
 
@@ -663,6 +664,18 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
         <div id="rtab-por-ticker" class="tab-panel">
           <div class="card" style="margin-bottom:14px"><div class="card-title">P&amp;L por subyacente</div><div class="chart-wrap"><canvas id="r-chart-ticker"></canvas></div></div>
           <div class="card"><div class="report-section-title">Detalle por ticker</div><div id="r-ticker-table"></div></div>
+        </div>
+
+        <div id="rtab-mfe" class="tab-panel">
+          <div class="card report-section" style="margin-bottom:14px">
+            <div class="report-section-title">Resumen MFE en pérdidas</div>
+            <div id="r-mfe-stats"></div>
+          </div>
+          <div class="card">
+            <div class="report-section-title">Trades perdedores por % de camino a TP alcanzado</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Requiere haber llenado Precio SPY al entrar, Precio SPY en punto MFE y Delta en punto MFE en cada trade (modal Editar). Es una aproximación lineal por delta, no un cálculo exacto de la opción.</div>
+            <div id="r-mfe-table"></div>
+          </div>
         </div>
 
         <div id="rtab-comparar" class="tab-panel">
@@ -1718,6 +1731,16 @@ function openEdit(id) {
       <div><label class="form-label">Notas</label>
         <textarea class="form-control" id="em-notas" rows="3" placeholder="Notas del trade...">${t.notas||''}</textarea></div>
     </div>
+    <label class="form-label" style="margin-top:10px;display:block">MFE — Maximum Favorable Excursion (opcional, sobre todo en pérdidas)</label>
+    <div class="form-row g3">
+      <div><label class="form-label">Precio SPY al entrar</label>
+        <input class="form-control" id="em-spy-entry" type="number" value="${t.spyEntryPrice??''}" step="0.01" placeholder="746.70" oninput="emCalcMfe('${t.tipo}',${t.prima},${t.contratos||1})"></div>
+      <div><label class="form-label">Precio SPY en MFE</label>
+        <input class="form-control" id="em-mfe-spy" type="number" value="${t.mfeSpyPrice??''}" step="0.01" placeholder="747.26" oninput="emCalcMfe('${t.tipo}',${t.prima},${t.contratos||1})"></div>
+      <div><label class="form-label">Delta en punto MFE</label>
+        <input class="form-control" id="em-mfe-delta" type="number" value="${t.mfeDelta??''}" step="0.01" min="0.05" max="0.95" placeholder="0.49" oninput="emCalcMfe('${t.tipo}',${t.prima},${t.contratos||1})"></div>
+    </div>
+    <div id="em-mfe-preview" style="margin-top:4px"></div>
     <div style="margin:6px 0;display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="em-prueba" ${t.esPrueba?'checked':''} style="width:16px;height:16px;cursor:pointer">
       <label for="em-prueba" style="font-size:12px;color:var(--muted);cursor:pointer">Es trade de prueba (no cuenta para métricas de la estrategia)</label>
@@ -1760,6 +1783,33 @@ function openEdit(id) {
         .catch(e => { console.error(`Captura load (${tf.key}):`, e); const st = document.getElementById('em-captura-status'); if (st) st.textContent = `No se pudo cargar la miniatura (${tf.label})`; });
     }
   });
+  emCalcMfe(t.tipo, t.prima, t.contratos||1);
+}
+
+// Calcula, con los 3 inputs de MFE (precio SPY entrada, precio SPY en el punto mas favorable, delta en ese punto),
+// la prima estimada en ese punto y el % de camino recorrido hacia el Take Profit (TP_DEFAULT, ej. 30%).
+// Aproximacion lineal por delta: no considera gamma ni theta. Uso: referencia de calibracion SL/TP, no precision exacta.
+function emCalcMfe(tipo, primaEntrada, contratos) {
+  const spyEntry = parseFloat(document.getElementById('em-spy-entry').value);
+  const spyMfe   = parseFloat(document.getElementById('em-mfe-spy').value);
+  const delta    = parseFloat(document.getElementById('em-mfe-delta').value);
+  const prev = document.getElementById('em-mfe-preview');
+  if (!prev) return;
+  if (!spyEntry || !spyMfe || !delta || !primaEntrada) { prev.innerHTML = ''; return; }
+
+  const dirSign  = tipo === 'PUT' ? -1 : 1;
+  const movSpy   = (spyMfe - spyEntry) * dirSign; // movimiento de SPY a favor de la posicion
+  const primaMfe = Math.max(0, primaEntrada + movSpy * delta);
+  const tpObjetivo = primaEntrada * (1 + TP_DEFAULT);
+  const pct = tpObjetivo > primaEntrada ? ((primaMfe - primaEntrada) / (tpObjetivo - primaEntrada)) * 100 : 0;
+  const pctClamped = Math.max(-100, Math.min(150, pct));
+
+  prev.innerHTML = `
+    <div style="padding:8px;background:var(--bg4);border-radius:var(--r2);font-family:var(--mono);font-size:12px;color:var(--muted)">
+      Prima estimada en MFE: <strong style="color:var(--text)">$${primaMfe.toFixed(2)}</strong>
+      &nbsp;|&nbsp; TP objetivo: <strong style="color:var(--text)">$${tpObjetivo.toFixed(2)}</strong>
+      &nbsp;|&nbsp; % camino a TP: <strong class="${pctClamped>=0?'green':'red'}">${pctClamped.toFixed(0)}%</strong>
+    </div>`;
 }
 
 // Comprime y sube la captura elegida en el modal de Editar para un timeframe específico; actualiza t.capturas[tf].
@@ -1870,6 +1920,21 @@ function saveEditTrade() {
   t.rsi      = parseFloat(document.getElementById('em-rsi').value)||null;
   t.iv       = parseFloat(document.getElementById('em-iv').value)||null;
   t.pnl      = t.primaOut!==null ? Math.round((t.primaOut-t.prima)*100*(t.contratos||1)) : null;
+
+  t.spyEntryPrice = parseFloat(document.getElementById('em-spy-entry').value)||null;
+  t.mfeSpyPrice   = parseFloat(document.getElementById('em-mfe-spy').value)||null;
+  t.mfeDelta      = parseFloat(document.getElementById('em-mfe-delta').value)||null;
+  if (t.spyEntryPrice && t.mfeSpyPrice && t.mfeDelta && t.prima) {
+    const dirSign = t.tipo === 'PUT' ? -1 : 1;
+    const movSpy  = (t.mfeSpyPrice - t.spyEntryPrice) * dirSign;
+    t.mfePrimaEstimada = Math.max(0, t.prima + movSpy * t.mfeDelta);
+    const tpObjetivo   = t.prima * (1 + TP_DEFAULT);
+    t.pctHaciaTP = tpObjetivo > t.prima ? ((t.mfePrimaEstimada - t.prima) / (tpObjetivo - t.prima)) * 100 : null;
+  } else {
+    t.mfePrimaEstimada = null;
+    t.pctHaciaTP = null;
+  }
+
   save(); closeModal(); renderHistorial(); notify('Trade actualizado ✓','green'); updateSidebar();
 }
 
@@ -1958,7 +2023,7 @@ function updateDeltaViz(v) {
 ═══════════════════════════════════════════════════ */
 function showReportTab(id) {
   document.querySelectorAll('.tab').forEach((t,i) => {
-    const ids=['resumen','por-hora','por-mes','por-ticker','comparar'];
+    const ids=['resumen','por-hora','por-mes','por-ticker','mfe','comparar'];
     t.classList.toggle('active', ids[i]===id);
   });
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -1967,6 +2032,7 @@ function showReportTab(id) {
   if (id==='por-hora')   renderReporteHora();
   if (id==='por-mes')    renderReporteMes();
   if (id==='por-ticker') renderReporteTicker();
+  if (id==='mfe')        renderReporteMfe();
   if (id==='comparar')   renderComparar();
 }
 
@@ -2132,6 +2198,51 @@ function renderReporteTicker() {
     }).join('') + '</tbody></table>';
 }
 
+// Reporte de MFE (Maximum Favorable Excursion) — solo trades con los 3 campos MFE llenos (spyEntryPrice, mfeSpyPrice, mfeDelta).
+// Util para calibrar si el SL/TP actual (30%/30%) esta bien ajustado, o si las perdidas nunca tuvieron oportunidad real
+// (pctHaciaTP bajo) vs. perdidas que estuvieron cerca de haber sido ganadoras (pctHaciaTP alto).
+function renderReporteMfe() {
+  const conMfe = closedTrades().filter(t => t.pctHaciaTP !== null && t.pctHaciaTP !== undefined);
+  const perdedoresConMfe = conMfe.filter(t => t.pnl < 0);
+
+  const statsEl = document.getElementById('r-mfe-stats');
+  if (!conMfe.length) {
+    statsEl.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin trades con datos de MFE todavía. Llena Precio SPY al entrar, Precio SPY en punto MFE y Delta en punto MFE en el modal Editar.</div></div>';
+    document.getElementById('r-mfe-table').innerHTML = '';
+    return;
+  }
+  const avgPct = perdedoresConMfe.length
+    ? perdedoresConMfe.reduce((a,t)=>a+t.pctHaciaTP,0) / perdedoresConMfe.length
+    : 0;
+  const cercaTP = perdedoresConMfe.filter(t => t.pctHaciaTP >= 60).length;
+  const lejosTP = perdedoresConMfe.filter(t => t.pctHaciaTP < 30).length;
+
+  statsEl.innerHTML = [
+    ['Trades con datos de MFE',              conMfe.length],
+    ['Pérdidas con datos de MFE',            perdedoresConMfe.length],
+    ['% promedio de camino a TP (pérdidas)', perdedoresConMfe.length ? avgPct.toFixed(0)+'%' : '—'],
+    ['Pérdidas cerca del TP (≥60%)',         cercaTP],
+    ['Pérdidas lejos del TP (<30%)',         lejosTP],
+  ].map(([l,v])=>`<div class="metric-row"><span class="metric-row-label">${l}</span><span class="metric-row-val">${v}</span></div>`).join('');
+
+  const tableEl = document.getElementById('r-mfe-table');
+  if (!perdedoresConMfe.length) { tableEl.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin pérdidas con datos de MFE todavía</div></div>'; return; }
+
+  const sorted = [...perdedoresConMfe].sort((a,b) => b.pctHaciaTP - a.pctHaciaTP);
+  tableEl.innerHTML = `<table><thead><tr><th>Fecha</th><th>Ticker/Tipo</th><th>Score</th><th>Prima entrada→salida</th><th>Prima MFE est.</th><th>% camino a TP</th></tr></thead><tbody>` +
+    sorted.map(t => {
+      const pctColor = t.pctHaciaTP>=60 ? 'var(--red)' : t.pctHaciaTP>=30 ? 'var(--amber)' : 'var(--muted)';
+      return `<tr onclick="openEdit('${t.id}')" style="cursor:pointer">
+        <td>${fmtDate(t.fecha)}</td>
+        <td style="font-weight:600">${t.ticker} ${t.tipo}</td>
+        <td><span class="badge badge-dim">${t.score!==undefined?t.score:'—'}/5</span></td>
+        <td style="font-family:var(--mono)">$${t.prima.toFixed(2)} → $${(t.primaOut||0).toFixed(2)}</td>
+        <td style="font-family:var(--mono)">$${t.mfePrimaEstimada!==undefined&&t.mfePrimaEstimada!==null?t.mfePrimaEstimada.toFixed(2):'—'}</td>
+        <td style="font-family:var(--mono);font-weight:600;color:${pctColor}">${t.pctHaciaTP.toFixed(0)}%</td>
+      </tr>`;
+    }).join('') + '</tbody></table>';
+}
+
 function populateComparadores() {
   const months = [...new Set(trades.map(t=>t.fecha?.slice(0,7)).filter(Boolean))].sort().reverse();
   const opts = '<option value="">Seleccionar...</option>' + months.map(m=>`<option value="${m}">${m}</option>`).join('');
@@ -2167,11 +2278,15 @@ function renderComparar() {
    EXPORT
 ═══════════════════════════════════════════════════ */
 function exportData() {
-  const headers = ['Fecha','Hora entrada ET','Ticker','Tipo','Strike','Delta','Prima entrada','Prima salida','Contratos','RSI','BB Width/IV','Score','Estado','Hora cierre ET','P&L ($)','Notas'];
+  const headers = ['Fecha','Hora entrada ET','Ticker','Tipo','Strike','Delta','Prima entrada','Prima salida','Contratos','RSI','BB Width/IV','Score','Estado','Hora cierre ET','P&L ($)','SPY entrada','SPY MFE','Delta MFE','Prima MFE est.','% camino a TP','Notas'];
   const rows = trades.map(t => [
     t.fecha, t.hora||'', t.ticker, t.tipo, t.strike||'', t.delta||'', t.prima,
     t.primaOut||'', t.contratos||1, t.rsi||'', t.iv||'', t.score!==undefined?t.score:'',
-    t.estado, t.horaOut||'', t.pnl!==null?t.pnl:'', t.notas||''
+    t.estado, t.horaOut||'', t.pnl!==null?t.pnl:'',
+    t.spyEntryPrice||'', t.mfeSpyPrice||'', t.mfeDelta||'',
+    t.mfePrimaEstimada!==undefined&&t.mfePrimaEstimada!==null?t.mfePrimaEstimada.toFixed(2):'',
+    t.pctHaciaTP!==undefined&&t.pctHaciaTP!==null?t.pctHaciaTP.toFixed(0):'',
+    t.notas||''
   ]);
   const csv = [headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
