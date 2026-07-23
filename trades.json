@@ -346,7 +346,7 @@
     "iv": null,
     "rsi": null,
     "score": 0,
-    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂÃÂÃÂÃÂ¡tico",
+    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡tico",
     "esPrueba": false,
     "estado": "perdida",
     "primaOut": 1.19,
@@ -370,7 +370,7 @@
     "iv": null,
     "rsi": null,
     "score": 0,
-    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂÃÂÃÂÃÂ¡tico. Rte trade se probo la resistancia de VWAP, emas estaban en tedencia bajista marcando PUT pero VWAP estaba por debajo del precio",
+    "notas": "Importado de TOS - cerrado via Stop Loss automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡tico. Rte trade se probo la resistancia de VWAP, emas estaban en tedencia bajista marcando PUT pero VWAP estaba por debajo del precio",
     "esPrueba": true,
     "estado": "perdida",
     "primaOut": 1.13,
@@ -394,7 +394,7 @@
     "iv": 0.19,
     "rsi": 49.16,
     "score": 4,
-    "notas": "Importado de TOS - cerrado via Take Profit / lÃÂ­mite\nSe tomo timeframe de 15 min como, referencia en tendencia bajista, EMA 9 < 21 , el precio esta ligeramente por debajo de los EMA's, precio < VWAP, no hay muestras de sobreventa o sobrecompra. score 4/5 Dia de riesgo, se recomienda reducir size, por lo que se toma prima mas barata. Hay un momento a considerar en lo que se hace el analisis y se mete el trade en TOS. sin embargo el analisis se hace en la vela de 10:30 en 15 min. Ambos time frames 15 y 1 muestran tendencia bajista",
+    "notas": "Importado de TOS - cerrado via Take Profit / lÃÂÃÂ­mite\nSe tomo timeframe de 15 min como, referencia en tendencia bajista, EMA 9 < 21 , el precio esta ligeramente por debajo de los EMA's, precio < VWAP, no hay muestras de sobreventa o sobrecompra. score 4/5 Dia de riesgo, se recomienda reducir size, por lo que se toma prima mas barata. Hay un momento a considerar en lo que se hace el analisis y se mete el trade en TOS. sin embargo el analisis se hace en la vela de 10:30 en 15 min. Ambos time frames 15 y 1 muestran tendencia bajista",
     "esPrueba": false,
     "capturas": {
       "m15": "capturas/mrtrkbxh0p8i_m15.jpg",
@@ -425,7 +425,7 @@
       true,
       true
     ],
-    "notas": "Checklist (5/5):\nâ EMA 9 > EMA 21 + precio sobre VWAP\nâ RSI 35â70 (5 min)\nâ BB Width < 3.5% y sin expansiÃ³n\nâ Entrada antes 11:30 AM ET\nâ No es Lun / MiÃ© / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automÃ¡tico\nE proceso de seguio adecuadamente, en este caso no se lleno la orden. ",
+    "notas": "Checklist (5/5):\nÃ¢ÂÂ EMA 9 > EMA 21 + precio sobre VWAP\nÃ¢ÂÂ RSI 35Ã¢ÂÂ70 (5 min)\nÃ¢ÂÂ BB Width < 3.5% y sin expansiÃÂ³n\nÃ¢ÂÂ Entrada antes 11:30 AM ET\nÃ¢ÂÂ No es Lun / MiÃÂ© / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automÃÂ¡tico\nE proceso de seguio adecuadamente, en este caso no se lleno la orden. ",
     "esPrueba": false,
     "capturas": {
       "m15": "capturas/mrv4mt50a31o_m15.jpg",
@@ -439,5 +439,33 @@
     "mfeDelta": 0.48,
     "mfePrimaEstimada": 1.7547999999999955,
     "pctHaciaTP": 25.52147239263714
+  },
+  {
+    "id": "mrx09rpti5us",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-07-22",
+    "hora": "10:32",
+    "horaOut": "11:03",
+    "strike": 747,
+    "delta": 0.44,
+    "prima": 1.21,
+    "contratos": 1,
+    "iv": 0.2,
+    "rsi": 48.15,
+    "score": 2,
+    "checklistDetalle": [
+      true,
+      false,
+      false,
+      true,
+      false
+    ],
+    "notas": "Checklist (2/5):\n✓ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✓ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "perdida",
+    "primaOut": 0.84,
+    "pnl": -37
   }
 ]
