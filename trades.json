@@ -464,7 +464,8 @@
     "notas": "Checklist (2/5):\n✓ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✓ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático",
     "esPrueba": false,
     "capturas": {
-      "m15": "capturas/mrx09rpti5us_m15.jpg"
+      "m15": "capturas/mrx09rpti5us_m15.jpg",
+      "m1": "capturas/mrx09rpti5us_m1.jpg"
     },
     "estado": "perdida",
     "primaOut": 0.84,
