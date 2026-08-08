@@ -583,5 +583,33 @@
     "mfeDelta": null,
     "mfePrimaEstimada": null,
     "pctHaciaTP": null
+  },
+  {
+    "id": "msl0kma0gzov",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-29",
+    "hora": "11:02",
+    "horaOut": "11:54",
+    "strike": 736,
+    "delta": 0.49,
+    "prima": 2.66,
+    "contratos": 1,
+    "iv": 1.52,
+    "rsi": 29,
+    "score": 3,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático\nEn este caso el time frame de 15 min no marcaba tendencia, sin embargo vi un cambio de tendencia en el marco de 1 minuto, como prueba meti el call",
+    "esPrueba": true,
+    "capturas": {},
+    "estado": "perdida",
+    "primaOut": 1.82,
+    "pnl": -84
   }
 ]
