@@ -607,7 +607,9 @@
     ],
     "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático\nEn este caso el time frame de 15 min no marcaba tendencia, sin embargo vi un cambio de tendencia en el marco de 1 minuto, como prueba meti el call",
     "esPrueba": true,
-    "capturas": {},
+    "capturas": {
+      "m15": "capturas/msl0kma0gzov_m15.jpg"
+    },
     "estado": "perdida",
     "primaOut": 1.82,
     "pnl": -84
