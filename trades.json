@@ -484,11 +484,11 @@
     "hora": "10:34",
     "horaOut": "10:46",
     "strike": 738,
-    "delta": null,
+    "delta": 0.51,
     "prima": 1.29,
     "contratos": 1,
-    "iv": null,
-    "rsi": null,
+    "iv": 0.52,
+    "rsi": 44,
     "score": 0,
     "checklistDetalle": [
       false,
@@ -502,7 +502,12 @@
     "capturas": {},
     "estado": "ganancia",
     "primaOut": 1.69,
-    "pnl": 40
+    "pnl": 40,
+    "spyEntryPrice": null,
+    "mfeSpyPrice": null,
+    "mfeDelta": null,
+    "mfePrimaEstimada": null,
+    "pctHaciaTP": null
   },
   {
     "id": "ms5eek3jgpjt",
