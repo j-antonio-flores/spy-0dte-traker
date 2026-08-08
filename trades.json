@@ -649,6 +649,11 @@
     },
     "estado": "perdida",
     "primaOut": 1.03,
-    "pnl": -53
+    "pnl": -53,
+    "spyEntryPrice": 737.76,
+    "mfeSpyPrice": 738.99,
+    "mfeDelta": 0.49,
+    "mfePrimaEstimada": 2.162700000000009,
+    "pctHaciaTP": 128.7820512820532
   }
 ]
