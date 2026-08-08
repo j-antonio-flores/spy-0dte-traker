@@ -556,11 +556,11 @@
     "hora": "10:30",
     "horaOut": "10:48",
     "strike": 738,
-    "delta": null,
+    "delta": 0.52,
     "prima": 1.51,
     "contratos": 1,
-    "iv": null,
-    "rsi": null,
+    "iv": 0.54,
+    "rsi": 50,
     "score": 0,
     "checklistDetalle": [
       false,
@@ -577,6 +577,11 @@
     },
     "estado": "ganancia",
     "primaOut": 2.02,
-    "pnl": 51
+    "pnl": 51,
+    "spyEntryPrice": null,
+    "mfeSpyPrice": null,
+    "mfeDelta": null,
+    "mfePrimaEstimada": null,
+    "pctHaciaTP": null
   }
 ]
