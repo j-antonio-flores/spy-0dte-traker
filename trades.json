@@ -643,7 +643,9 @@
     ],
     "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático, en el marco de 15 min, marcaba una entrada, no con una tendecia muy clara, y en el marco de 1 minuto, tambien se veia, unque casa se lleno creo que por ser dia de riesgo, deberia de habiar bajado a 20/35",
     "esPrueba": false,
-    "capturas": {},
+    "capturas": {
+      "m15": "capturas/msl0zm3j5alp_m15.jpg"
+    },
     "estado": "perdida",
     "primaOut": 1.03,
     "pnl": -53
