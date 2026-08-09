@@ -763,5 +763,33 @@
     "mfeDelta": null,
     "mfePrimaEstimada": null,
     "pctHaciaTP": null
+  },
+  {
+    "id": "msl28d42t5qa",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-08-03",
+    "hora": "10:48",
+    "horaOut": "10:56",
+    "strike": 755,
+    "delta": null,
+    "prima": 0.76,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Take Profit / límite",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "ganancia",
+    "primaOut": 0.93,
+    "pnl": 17
   }
 ]
