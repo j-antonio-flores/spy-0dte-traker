@@ -655,5 +655,33 @@
     "mfeDelta": 0.49,
     "mfePrimaEstimada": 2.162700000000009,
     "pctHaciaTP": 128.7820512820532
+  },
+  {
+    "id": "msl1krcbe15j",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-07-31",
+    "hora": "10:43",
+    "horaOut": "10:46",
+    "strike": 740,
+    "delta": 0.49,
+    "prima": 1.43,
+    "contratos": 1,
+    "iv": 1.54,
+    "rsi": 48,
+    "score": 4,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático\nSe tomo como trade de prueba, solo se verificao el marco de 15 minutos, sin embargo el marco de 1 minutos marcarba tendecia de call",
+    "esPrueba": true,
+    "capturas": {},
+    "estado": "perdida",
+    "primaOut": 0.93,
+    "pnl": -50
   }
 ]
