@@ -700,11 +700,11 @@
     "hora": "10:47",
     "horaOut": "10:49",
     "strike": 742,
-    "delta": null,
+    "delta": 0.47,
     "prima": 1.48,
     "contratos": 1,
-    "iv": null,
-    "rsi": null,
+    "iv": 0.72,
+    "rsi": 59,
     "score": 0,
     "checklistDetalle": [
       false,
@@ -721,7 +721,12 @@
     },
     "estado": "ganancia",
     "primaOut": 1.78,
-    "pnl": 30
+    "pnl": 30,
+    "spyEntryPrice": null,
+    "mfeSpyPrice": null,
+    "mfeDelta": null,
+    "mfePrimaEstimada": null,
+    "pctHaciaTP": null
   },
   {
     "id": "msl1lr6vo6qm",
