@@ -715,7 +715,9 @@
     ],
     "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Take Profit / límite",
     "esPrueba": false,
-    "capturas": {},
+    "capturas": {
+      "m15": "capturas/msl1ljklcjy5_m15.jpg"
+    },
     "estado": "ganancia",
     "primaOut": 1.78,
     "pnl": 30
