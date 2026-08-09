@@ -819,5 +819,33 @@
     "estado": "ganancia",
     "primaOut": 1.54,
     "pnl": 38
+  },
+  {
+    "id": "msl29kak5fqv",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-08-05",
+    "hora": "10:23",
+    "horaOut": "10:37",
+    "strike": 774,
+    "delta": null,
+    "prima": 1.57,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Take Profit / límite",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "ganancia",
+    "primaOut": 1.91,
+    "pnl": 34
   }
 ]
