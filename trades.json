@@ -685,7 +685,12 @@
     },
     "estado": "perdida",
     "primaOut": 0.93,
-    "pnl": -50
+    "pnl": -50,
+    "spyEntryPrice": null,
+    "mfeSpyPrice": null,
+    "mfeDelta": null,
+    "mfePrimaEstimada": null,
+    "pctHaciaTP": null
   },
   {
     "id": "msl1ljklcjy5",
