@@ -931,5 +931,33 @@
     "estado": "ganancia",
     "primaOut": 1.42,
     "pnl": 25
+  },
+  {
+    "id": "mt6jr7t0q2bn",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-08-12",
+    "hora": "10:35",
+    "horaOut": "10:41",
+    "strike": 772,
+    "delta": 0.56,
+    "prima": 1.2,
+    "contratos": 1,
+    "iv": 0.54,
+    "rsi": 53.41,
+    "score": 2,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático, operacion sin aprobacion en marco de 15 minutos, dia de riegio se en tro con 20 TP/35 SL, pero s tomo el reiego porque las emas, mostrabanm tendencia bajista",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "perdida",
+    "primaOut": 0.78,
+    "pnl": -42
   }
 ]
