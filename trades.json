@@ -1015,5 +1015,33 @@
     "estado": "ganancia",
     "primaOut": 1.44,
     "pnl": 28
+  },
+  {
+    "id": "mt6jxyorikc1",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-07-17",
+    "hora": "10:17",
+    "horaOut": "10:32",
+    "strike": 747,
+    "delta": null,
+    "prima": 1.75,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "perdida",
+    "primaOut": 1.19,
+    "pnl": -56
   }
 ]
