@@ -1071,5 +1071,33 @@
     "estado": "ganancia",
     "primaOut": 1.62,
     "pnl": 22
+  },
+  {
+    "id": "mtbntnxb2m6i",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-08-17",
+    "hora": "10:21",
+    "horaOut": "11:17",
+    "strike": 776,
+    "delta": null,
+    "prima": 1.24,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "perdida",
+    "primaOut": 0.81,
+    "pnl": -43
   }
 ]
