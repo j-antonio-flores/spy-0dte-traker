@@ -1323,5 +1323,33 @@
     "estado": "perdida",
     "primaOut": 0.49,
     "pnl": -26
+  },
+  {
+    "id": "mtis9um24inl",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-09-01",
+    "hora": "10:31",
+    "horaOut": "10:49",
+    "strike": null,
+    "delta": null,
+    "prima": 0.67,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "ganancia",
+    "primaOut": 0.74,
+    "pnl": 7
   }
 ]
