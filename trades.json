@@ -1351,5 +1351,33 @@
     "estado": "ganancia",
     "primaOut": 0.74,
     "pnl": 7
+  },
+  {
+    "id": "mtisj0ocj33m",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-09-01",
+    "hora": "10:53",
+    "horaOut": "10:54",
+    "strike": 763,
+    "delta": null,
+    "prima": 0.64,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Take Profit / límite",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "ganancia",
+    "primaOut": 0.71,
+    "pnl": 7
   }
 ]
