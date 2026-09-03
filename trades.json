@@ -1463,5 +1463,33 @@
     "estado": "perdida",
     "primaOut": 0.75,
     "pnl": -18
+  },
+  {
+    "id": "mtlncedaomfz",
+    "ticker": "SPY",
+    "tipo": "CALL",
+    "fecha": "2026-09-03",
+    "hora": "10:49",
+    "horaOut": "10:53",
+    "strike": 769,
+    "delta": null,
+    "prima": 0.77,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo\n\nImportado de TOS - cerrado via Stop Loss automático",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "perdida",
+    "primaOut": 0.62,
+    "pnl": -15
   }
 ]
