@@ -1519,5 +1519,33 @@
     "estado": "perdida",
     "primaOut": 0.8,
     "pnl": -13
+  },
+  {
+    "id": "mtn3byvi65ds",
+    "ticker": "SPY",
+    "tipo": "PUT",
+    "fecha": "2026-09-04",
+    "hora": "11:01",
+    "horaOut": "11:02",
+    "strike": 769,
+    "delta": 0.1,
+    "prima": 0.83,
+    "contratos": 1,
+    "iv": null,
+    "rsi": null,
+    "score": 0,
+    "checklistDetalle": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "notas": "Checklist (0/5):\n✗ EMA 9 > EMA 21 + precio sobre VWAP\n✗ RSI 35–70 (5 min)\n✗ BB Width < 3.5% y sin expansión\n✗ Entrada antes 11:30 AM ET\n✗ No es Lun / Mié / Vie con riesgo",
+    "esPrueba": false,
+    "capturas": {},
+    "estado": "ganancia",
+    "primaOut": 0.93,
+    "pnl": 10
   }
 ]
