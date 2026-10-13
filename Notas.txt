@@ -1,0 +1,46 @@
+
+Delineó estrategia para identificar expansión, sobrecompra y patrones VWAP
+
+Tus tres acciones tienen sentido y son consistentes con todo lo que validamos. Te explico los dos puntos técnicos que pediste.
+
+1. Cómo verificar el patrón de expansión/sobrecompra
+
+Ya tienes los tres datos que necesitas en el Data Window de 15 min — solo hay que mirar la combinación, no cada uno por separado:
+
+RSI cerca de límite:
+
+Sobrecompra: RSI ≥ 65-70 (tu umbral superior es 70)
+Sobreventa: RSI ≤ 30-35 (tu umbral inferior es 35)
+No basta con "estar dentro del rango 35-70" — hay que ver qué tan cerca del borde está. El 15 de julio (Caso 6) el RSI real de 15 min era 68.68, técnicamente "OK" según el checklist (<70) pero a solo 1.3 puntos del límite. Esa cercanía al borde es la señal de agotamiento, aunque el check formal diga ✓.
+
+BB Width expandiendo:
+
+Tu script ya calcula esto con la etiqueta iv_expanding y lo muestra en la tabla como "X% subiendo" cuando está activo (lo vimos en varias capturas: "0.73% subiendo").
+La regla práctica: compara el valor de BB Width de la vela actual contra 2-3 velas atrás en el mismo timeframe de 15 min. Si viene subiendo de forma sostenida (no solo un pico aislado), es expansión real de volatilidad — el precio se está moviendo con más fuerza de la que traía, lo cual suele preceder una reversión o un movimiento brusco en cualquier dirección.
+
+Cómo combinarlos en la práctica (regla de decisión):
+
+Si RSI está a menos de ~5 puntos del límite (65+ en alcista, 40- en bajista) Y BB Width muestra "subiendo" en la tabla → trátalo como una advertencia de agotamiento, incluso si el score numérico da 4-5/5. Esto es exactamente lo que pasó en el 15 y 16 de julio.
+Si solo uno de los dos se cumple, es una señal más débil — puedes operar con size reducido en vez de descartar la entrada.
+2. Patrón esperado de VWAP según tendencia
+
+El VWAP (precio promedio ponderado por volumen desde la apertura) funciona como una línea de "valor justo del día". El comportamiento esperado es:
+
+En tendencia alcista sana:
+
+Precio se mantiene por encima del VWAP de forma sostenida.
+El VWAP actúa como soporte dinámico: el precio puede tocar el VWAP y rebotar hacia arriba, pero no debería cerrar varias velas por debajo de él.
+Si ves precio por encima de VWAP pero EMA9/21 ya cruzaron a bajista (como en tu Caso 9, 17 jul), es una señal de que la tendencia alcista está agotándose — el precio "no se ha enterado todavía" pero la estructura ya cambió.
+
+En tendencia bajista sana:
+
+Precio se mantiene por debajo del VWAP.
+El VWAP actúa como resistencia dinámica: el precio puede subir a tocarlo y rebotar hacia abajo, pero no debería cerrar por encima de forma sostenida.
+Si ves EMA9/21 bajistas pero el precio sigue por encima de VWAP (exactamente tu Caso 10, 17 jul segundo trade, y tu Caso 7, 15 jul segundo trade) — esto es la señal de alerta más clara de "patrón C": la tendencia de corto plazo (EMAs) va en una dirección, pero el mercado en conjunto (VWAP, que pesa por volumen todo el día) todavía no confirma esa dirección. Es una señal mixta, no una señal fuerte.
+
+Regla práctica para tu checklist:
+
+Confirmación fuerte = EMA9/21 y precio-vs-VWAP apuntan en la misma dirección.
+Señal débil/mixta = EMA9/21 dicen una cosa, precio-vs-VWAP dice otra. En 2 de tus 7 pérdidas revisadas (15 jul 2do, 17 jul 2do) esto se dio exactamente así — es una razón adicional, además del score bajo, para no operar en esa ventana.
+
+Con tus tres acciones (priorizar 15 min sobre 1 min, exigir coincidencia entre ambos, y ahora sumar esta verificación de agotamiento/VWAP) tienes un filtro bastante más robusto que el checklist numérico solo. Si quieres, la próxima semana podemos formalizar esto como una 6ta y 7ma condición explícita en el script en vez de dejarlo como verificación manual.

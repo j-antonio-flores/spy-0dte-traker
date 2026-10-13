@@ -14,7 +14,7 @@
   --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
   --text:#e8eaf0; --muted:#7a8090; --dim:#4a5060;
   --accent:#c8f060; --accent2:#9ae020;
-  --green:#4ecb8f; --red:#f06060; --amber:#f0b840; --blue:#60a8f0;
+  --green:#4ecb8f; --red:#f06060; --amber:#f0b840; --blue:#60a8f0; --real:#c084fc;
   --font:'Sora',sans-serif; --mono:'DM Mono',monospace;
   --r:10px; --r2:6px;
 }
@@ -85,6 +85,28 @@ input,select,textarea { font-family:var(--mono); }
 .badge-blue { background:rgba(96,168,240,.15); color:var(--blue); }
 .badge-dim { background:var(--bg3); color:var(--muted); }
 .badge-accent { background:rgba(200,240,96,.15); color:var(--accent); }
+.badge-real { background:rgba(192,132,252,.18); color:var(--real); }
+.seg { display:inline-flex; border:1px solid var(--border2); border-radius:var(--r2); overflow:hidden; }
+.seg button { padding:6px 12px; font-size:11.5px; font-weight:500; background:none; border:none; color:var(--muted); font-family:var(--mono); }
+.seg button.on { background:var(--bg4); color:var(--text); }
+.seg button.real.on { background:rgba(192,132,252,.2); color:var(--real); }
+#page-nueva.modo-real .card { border-color:var(--real); }
+.drawer-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:80; }
+.drawer-overlay.open { display:block; }
+.drawer { position:fixed; top:0; right:0; height:100vh; width:540px; max-width:100vw; background:var(--bg2); border-left:1px solid var(--border2); z-index:90; transform:translateX(100%); transition:transform .2s ease; display:flex; flex-direction:column; }
+.drawer.open { transform:translateX(0); }
+.drawer-head { display:flex; justify-content:space-between; align-items:flex-start; padding:18px 20px 12px; }
+.drawer-title { font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.drawer-body { flex:1; overflow-y:auto; padding:6px 20px 28px; }
+.est-sec { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:18px 0 8px; padding-bottom:6px; border-bottom:1px solid rgba(200,240,96,.2); display:flex; justify-content:space-between; align-items:center; }
+.est-item { background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:10px 12px; margin-bottom:8px; }
+.est-item.descartada { opacity:.55; }
+.est-item-top { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+.est-item-title { font-size:12.5px; font-weight:600; }
+.est-item-val { font-size:12.5px; margin-top:3px; line-height:1.5; }
+.est-item-nota { font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.5; }
+.est-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.est-hist { border-left:2px solid var(--border2); padding-left:12px; margin:0 0 16px 4px; font-size:12px; line-height:1.55; }
 
 .form-row { display:grid; gap:12px; margin-bottom:14px; }
 .form-label { font-size:10.5px; color:var(--muted); font-family:var(--mono); letter-spacing:.03em; margin-bottom:5px; display:block; }
@@ -153,7 +175,8 @@ tr:hover td { background:rgba(255,255,255,.02); }
 input[type=range] { -webkit-appearance:none; width:100%; height:4px; background:var(--bg4); border-radius:2px; outline:none; }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent); cursor:pointer; box-shadow:0 0 8px rgba(200,240,96,.4); }
 
-.tabs { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.tabs { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:20px; overflow-x:auto; }
+.tabs .tab { white-space:nowrap; flex:0 0 auto; }
 .tab { padding:8px 16px; font-size:12px; font-weight:500; color:var(--muted); background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s; }
 .tab:hover { color:var(--text); }
 .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
@@ -207,7 +230,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
       <div class="nav-item" onclick="navigate('reportes')"><span class="nav-icon">↗</span> Reportes</div>
     </nav>
     <div class="budget-widget">
-      <div class="budget-label">CAPITAL RESTANTE</div>
+      <div class="budget-label" id="sb-budget-label">CAPITAL RESTANTE</div>
       <div class="budget-bar"><div class="budget-fill" id="sb-budget-fill" style="width:100%"></div></div>
       <div class="budget-nums">
         <span id="sb-budget-val" class="accent">$2,800</span>
@@ -223,7 +246,13 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
         <div class="page-sub" id="topbar-sub">Resumen de estrategia 0DTE</div>
       </div>
       <div class="topbar-right">
+        <div class="seg" id="modo-vista-seg" title="Filtrar la vista por tipo de cuenta">
+          <button data-m="todos" onclick="setModoVista('todos')">Todos</button>
+          <button data-m="paper" onclick="setModoVista('paper')">Paper</button>
+          <button data-m="real" class="real" onclick="setModoVista('real')">Real</button>
+        </div>
         <span id="sync-indicator" style="font-size:11px;font-family:var(--mono);color:var(--muted);margin-right:4px">◌ local</span>
+        <button class="btn" id="btn-estrategia" onclick="openEstrategia()" title="Reglas de la estrategia e historial de cambios">📘 Estrategia <span id="est-btn-ver" class="badge badge-accent" style="margin-left:4px">v1</span></button>
         <button class="btn" onclick="openGHConfig()" title="Configurar GitHub Storage">⚙ GitHub</button>
         <button class="btn" onclick="exportData()">↓ Exportar CSV</button>
         <button class="btn btn-accent" onclick="navigate('nueva')">+ Nuevo Trade</button>
@@ -299,6 +328,16 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
       <!-- NUEVO TRADE -->
       <div id="page-nueva" class="page">
         <div class="card" style="margin-bottom:16px">
+          <div class="card-title">Cuenta del trade</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div class="seg" id="modo-nuevo-seg">
+              <button id="modo-nuevo-paper" onclick="setModoNuevo('paper')">PAPER MONEY</button>
+              <button id="modo-nuevo-real" class="real" onclick="setModoNuevo('real')">DINERO REAL</button>
+            </div>
+            <span id="modo-nuevo-msg" style="font-size:11.5px;color:var(--muted)"></span>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
           <div class="card-title">Importar desde TOS</div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <input type="file" id="tos-file-input" accept=".csv" style="display:none" onchange="handleTosFile(this.files[0])">
@@ -352,6 +391,12 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                 <input class="form-control" id="f-contratos" type="number" placeholder="1" min="1" max="50" value="1" oninput="calcOCOInline()">
               </div>
             </div>
+            <div class="form-row g2">
+              <div>
+                <label class="form-label">Prima de referencia (opcional)</label>
+                <input class="form-control" id="f-prima-ref" type="number" placeholder="1.60" step="0.01">
+              </div>
+            </div>
             <div class="form-row g3" style="align-items:end">
               <div>
                 <label class="form-label">RSI 14 (35–70)</label>
@@ -373,6 +418,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                 </select>
               </div>
             </div>
+            <div id="f-regimen-block"></div>
             <div>
               <label class="form-label">Notas / setup SPY 0DTE</label>
               <textarea class="form-control" id="f-notas" rows="3" placeholder="Ej. EMA9>21 en 15min, precio sobre VWAP, RSI 58, BB Width 2.1% bajando, entrada 10:05am..."></textarea>
@@ -410,6 +456,12 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                     <input class="form-control" id="f-hora-out" type="time">
                   </div>
                 </div>
+                <div class="form-row g2">
+                  <div>
+                    <label class="form-label">Precio SPY al salir (opcional)</label>
+                    <input class="form-control" id="f-spy-out" type="number" step="0.01" placeholder="745.80">
+                  </div>
+                </div>
                 <div id="resultado-calc" style="margin-top:4px"></div>
               </div>
             </div>
@@ -423,7 +475,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
                   <div class="toggle" onclick="toggleCheck(this);updateQuickScore()"></div>
                 </div>
                 <div class="check-item">
-                  <div><div class="check-label">RSI 35–70 (5 min)</div><div class="check-detail">Momentum intraday SPY sin extremos</div></div>
+                  <div><div class="check-label">RSI 35–70 (15 min)</div><div class="check-detail">Momentum intraday SPY sin extremos</div></div>
                   <div class="toggle" onclick="toggleCheck(this);updateQuickScore()"></div>
                 </div>
                 <div class="check-item">
@@ -448,7 +500,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
               </div>
             </div>
 
-            <button class="btn btn-accent" style="width:100%;padding:12px" onclick="saveTrade()">Guardar trade →</button>
+            <button class="btn btn-accent" id="btn-save-trade" style="width:100%;padding:12px" onclick="saveTrade()">Guardar trade →</button>
           </div>
         </div>
       </div>
@@ -506,7 +558,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
               <div class="toggle" onclick="toggleCheck(this);updateFullChecklist()"></div>
             </div>
             <div class="check-item">
-              <div><div class="check-label">〜 RSI 35–70 (5 min)</div><div class="check-detail">Momentum intraday SPY — rango ampliado 0DTE</div></div>
+              <div><div class="check-label">〜 RSI 35–70 (15 min)</div><div class="check-detail">Momentum intraday SPY — rango ampliado 0DTE</div></div>
               <div class="toggle" onclick="toggleCheck(this);updateFullChecklist()"></div>
             </div>
             <div class="check-item">
@@ -558,8 +610,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
             <div style="margin-top:10px;padding:14px;background:var(--bg3);border-radius:var(--r)">
               <div style="font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-bottom:8px">HERRAMIENTAS SPY</div>
               <div style="font-size:12.5px;line-height:1.9;color:var(--text)">
-                <div>· TradingView 15 min → EMA 9/21 + VWAP</div>
-                <div>· TradingView 5 min → RSI 14 + BB Width</div>
+                <div>· TradingView 15 min → EMA 9/21 + VWAP + RSI 14 + BB Width (Data Window)</div>
                 <div>· Schwab/ToS → Cadena SPY 0DTE, delta real</div>
                 <div>· Strikes SPY: intervalos de $1</div>
                 <div>· Prima SPY objetivo: $0.20–$0.35</div>
@@ -594,11 +645,43 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
               <div id="calc-oco-out"></div>
             </div>
 
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-title">Movimiento de SPY necesario para TP y SL</div>
+              <div style="font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">
+                La prima no se mueve igual que SPY: el <strong style="color:var(--text)">delta</strong> la mueve de forma lineal, el <strong style="color:var(--text)">gamma</strong> la acelera si el precio va a tu favor (y amortigua las caídas) y el <strong style="color:var(--text)">theta</strong> le resta valor con el tiempo. Solo delta es obligatorio; gamma y theta son opcionales y se leen en la cadena de opciones de TOS.
+              </div>
+              <div class="form-row g3">
+                <div><label class="form-label">Tipo</label>
+                  <select class="form-control" id="calc-tipo" onchange="updateMov()"><option value="CALL">CALL</option><option value="PUT">PUT</option></select></div>
+                <div><label class="form-label">SPY actual (opcional)</label>
+                  <input class="form-control" id="calc-spy" type="number" step="0.01" placeholder="746.70" oninput="updateMov()"></div>
+                <div><label class="form-label">ATR 15 min, pts (opc.)</label>
+                  <input class="form-control" id="calc-atr" type="number" step="0.01" min="0" placeholder="0.65" oninput="updateMov()"></div>
+              </div>
+              <div class="form-row g3">
+                <div><label class="form-label">Delta</label>
+                  <input class="form-control" id="calc-delta" type="number" step="0.01" min="0.05" max="0.95" value="0.46" oninput="onDeltaCampo()"></div>
+                <div><label class="form-label">Gamma (opcional)</label>
+                  <input class="form-control" id="calc-gamma" type="number" step="0.001" min="0" placeholder="0.120" oninput="updateMov()"></div>
+                <div><label class="form-label">Theta TOS (opcional)</label>
+                  <input class="form-control" id="calc-theta" type="number" step="0.01" placeholder="-0.90" oninput="updateMov()"></div>
+              </div>
+              <div class="form-row g3">
+                <div><label class="form-label">Min. a mantener</label>
+                  <input class="form-control" id="calc-min-hold" type="number" min="1" max="390" value="30" oninput="updateMov()"></div>
+                <div><label class="form-label">Min. al cierre (auto)</label>
+                  <input class="form-control" id="calc-min-rest" type="number" min="1" max="390" data-auto="1" oninput="this.dataset.auto='0';updateMov()"></div>
+                <div><label class="form-label">Costos ida y vuelta (% prima)</label>
+                  <input class="form-control" id="calc-costos" type="number" step="0.5" min="0" placeholder="3" oninput="updateMov()"></div>
+              </div>
+              <div id="calc-mov-out"></div>
+            </div>
+
             <div class="card">
               <div class="card-title">Filtro delta SPY 0DTE</div>
               <div style="margin-bottom:12px">
                 <label class="form-label">Delta: <span id="delta-num">0.46</span></label>
-                <input type="range" id="delta-range" min="10" max="80" value="46" oninput="updateDeltaViz(this.value)">
+                <input type="range" id="delta-range" min="10" max="80" value="46" oninput="onDeltaSlider(this.value)">
               </div>
               <div style="position:relative;height:6px;background:var(--bg4);border-radius:3px;margin:12px 0">
                 <div style="position:absolute;height:100%;left:47%;width:6%;background:rgba(200,240,96,.25);border-radius:3px"></div>
@@ -640,6 +723,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
           <button class="tab" onclick="showReportTab('por-mes')">Por mes</button>
           <button class="tab" onclick="showReportTab('por-ticker')">Por ticker</button>
           <button class="tab" onclick="showReportTab('mfe')">MFE / SL-TP</button>
+          <button class="tab" onclick="showReportTab('paper-real')">Paper vs Real</button>
+          <button class="tab" onclick="showReportTab('por-version')">Por versión</button>
+          <button class="tab" onclick="showReportTab('regimen')">Régimen</button>
+          <button class="tab" onclick="showReportTab('modelo')">Modelo vs real</button>
           <button class="tab" onclick="showReportTab('comparar')">Comparar</button>
         </div>
 
@@ -678,6 +765,45 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
           </div>
         </div>
 
+        <div id="rtab-paper-real" class="tab-panel">
+          <div class="card report-section" style="margin-bottom:14px">
+            <div class="report-section-title">Paper vs Real</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Esta pestaña ignora el filtro Todos / Paper / Real de arriba y siempre compara ambas cuentas. Excluye trades abiertos y de prueba.</div>
+            <div id="r-pr-table"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Capital acumulado por número de trade (ambas cuentas inician en el capital base)</div>
+            <div class="chart-wrap"><canvas id="r-chart-pr"></canvas></div>
+          </div>
+        </div>
+
+        <div id="rtab-por-version" class="tab-panel">
+          <div class="card report-section">
+            <div class="report-section-title">Rendimiento por versión de la estrategia</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Cada trade guarda la versión de la estrategia vigente al registrarlo. Los trades anteriores a esta función aparecen como "Sin versión". Respeta el filtro Todos / Paper / Real y excluye abiertos y pruebas.</div>
+            <div id="r-ver-table"></div>
+          </div>
+        </div>
+
+        <div id="rtab-regimen" class="tab-panel">
+          <div class="card" style="margin-bottom:14px;border-color:var(--amber)">
+            <div style="font-size:12px;line-height:1.7;color:var(--muted)"><strong style="color:var(--amber)">Léelo con cuidado.</strong> Con pocos trades por grupo (menos de ~30), cualquier diferencia puede ser solo ruido. Esta pestaña sirve para ver hacia dónde apuntan los datos y cuánto falta para que digan algo, no para fijar umbrales ni cambiar el SL/TP por régimen. Respeta el filtro Todos / Paper / Real y excluye abiertos y pruebas.</div>
+          </div>
+          <div class="card report-section" style="margin-bottom:14px"><div class="report-section-title">Cobertura de datos</div><div id="r-reg-cob"></div></div>
+          <div class="card report-section" style="margin-bottom:14px"><div class="report-section-title">Resultados por tipo de mercado (tu etiqueta)</div><div id="r-reg-tipo"></div></div>
+          <div class="card report-section" style="margin-bottom:14px"><div class="report-section-title">Cada medida frente al resultado (mitad baja vs mitad alta)</div><div id="r-reg-medidas"></div></div>
+          <div class="card"><div class="report-section-title">Trades con medidas registradas</div><div id="r-reg-lista"></div></div>
+        </div>
+
+        <div id="rtab-modelo" class="tab-panel">
+          <div class="card report-section" style="margin-bottom:14px">
+            <div class="report-section-title">Qué tan bien predice la prima el modelo de solo delta</div>
+            <div style="font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:10px">Por trade: el movimiento real de SPY a tu favor × el delta de entrada da la variación de prima que predice el modelo más simple. El <strong style="color:var(--text)">residuo</strong> (real − predicho) junta lo que el modelo no ve: gamma (suma si el precio va a tu favor), theta, cambios de volatilidad y el spread entre compra y venta. Con estos datos no se pueden separar entre sí. Requiere SPY al entrar (Editar → MFE), SPY al salir, delta y prima de salida.</div>
+            <div id="r-mod-resumen"></div>
+          </div>
+          <div class="card"><div class="report-section-title">Detalle por trade</div><div id="r-mod-tabla"></div></div>
+        </div>
+
         <div id="rtab-comparar" class="tab-panel">
           <div class="card">
             <div class="card-title">Comparar dos periodos</div>
@@ -690,6 +816,34 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; h
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<div class="drawer-overlay" id="est-overlay" onclick="cerrarEstrategia()"></div>
+<aside class="drawer" id="est-drawer" aria-label="Estrategia">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-title">Estrategia <span id="est-version-badge" class="badge badge-accent">v1</span></div>
+      <div id="est-meta" style="font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-top:3px"></div>
+      <div id="est-sync" style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:2px"></div>
+    </div>
+    <button class="modal-close" onclick="cerrarEstrategia()">✕</button>
+  </div>
+  <div class="tabs" style="padding:0 20px;margin-bottom:0">
+    <button class="tab active" id="est-tab-reglas" onclick="setEstTab('reglas')">Reglas</button>
+    <button class="tab" id="est-tab-historial" onclick="setEstTab('historial')">Historial de cambios</button>
+  </div>
+  <div class="drawer-body" id="est-body"></div>
+</aside>
+
+<div class="modal-overlay" id="est-edit-modal">
+  <div class="modal">
+    <div class="modal-title"><span id="est-edit-titulo">Editar regla</span> <button class="modal-close" onclick="closeEstEdit()">✕</button></div>
+    <div id="est-edit-body"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-accent" style="flex:1" onclick="saveEstEdit()">Guardar y registrar cambio</button>
+      <button class="btn" onclick="closeEstEdit()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -829,7 +983,7 @@ async function loadFromGitHub() {
     if (res.status === 404) { setSyncStatus('ok'); return true; } // archivo aún no existe
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data    = await res.json();
-    const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
+    const content = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
     trades = Array.isArray(content) ? content : [];
     const c = getGHConfig(); c.sha = data.sha; saveGHConfig(c);
     setSyncStatus('ok');
@@ -874,6 +1028,481 @@ async function saveToGitHub() {
 }
 
 function save() { saveToGitHub(); }
+
+/* ═══════════════════════════════════════════════════
+   ESTRATEGIA — reglas vigentes + historial de cambios
+   - estrategia.json en el repo (mismo token), con respaldo en localStorage.
+   - Solo se agrega al historial: las reglas no se borran, se marcan "descartada".
+   - Cada cambio sube estrategia.version; cada trade nuevo guarda versionEstrategia.
+   - Es documentación: cambiar una regla aquí NO cambia el script Pine ni el checklist de la app.
+═══════════════════════════════════════════════════ */
+const ESTRATEGIA_KEY = 'ot_0dte_estrategia';
+const EST_ESTADOS = {
+  vigente:    { l:'Vigente',       c:'badge-green' },
+  validacion: { l:'En validación', c:'badge-amber' },
+  descartada: { l:'Descartada',    c:'badge-dim'   },
+};
+const EST_DONDE = {
+  'script+app': 'Script + app',
+  'script':     'Solo script',
+  'app':        'Solo app',
+  'manual':     'Solo manual',
+};
+const EST_SECCIONES = [
+  ['parametros', 'Parámetros'],
+  ['checklist',  'Checklist de entrada'],
+  ['lectura',    'Reglas de lectura'],
+  ['disciplina', 'Disciplina'],
+  ['patrones',   'Patrones de falla'],
+  ['pendientes', 'Pendientes por validar'],
+];
+
+function estrategiaSeed() {
+  const I = (id, seccion, titulo, valor, estado, donde, nota='') => ({ id, seccion, titulo, valor, estado, donde, nota });
+  return {
+    version: 1,
+    actualizado: today(),
+    items: [
+      I('pa-instr',  'parametros', 'Instrumento y plataformas', 'SPY, opciones 0DTE. Ejecución en Schwab/thinkorswim; análisis técnico en TradingView.', 'vigente', 'manual'),
+      I('pa-cap',    'parametros', 'Capital base y riesgo por trade', '$2,800 · 5% por trade ($140).', 'vigente', 'app'),
+      I('pa-sltp',   'parametros', 'Stop Loss / Take Profit', '30% / 30% sobre la prima (R:R 1:1).', 'vigente', 'app'),
+      I('pa-delta',  'parametros', 'Delta objetivo', '0.45–0.50.', 'vigente', 'script+app'),
+      I('pa-prima',  'parametros', 'Rango de prima', '$0.90–$1.79.', 'vigente', 'app'),
+      I('pa-contr',  'parametros', 'Contratos por trade', '1.', 'vigente', 'manual'),
+      I('pa-ventana','parametros', 'Ventana de entrada', '9:45–11:30 AM ET.', 'vigente', 'script+app'),
+      I('pa-caut',   'parametros', 'Días de cautela', 'Lunes (errático), miércoles (FOMC) y viernes (gamma). Hoy el script solo advierte.', 'validacion', 'script+app', 'Pendiente decidir si pasa de advertencia a exclusión dura.'),
+
+      I('ck-min',    'checklist', 'Score mínimo para operar', '4/5 o más, leído en el Data Window de 15 min.', 'vigente', 'manual'),
+      I('ck-1',      'checklist', '1. Tendencia y VWAP', 'EMA 9 > EMA 21 y precio sobre VWAP para CALL; invertido para PUT. Timeframe 15 min.', 'vigente', 'script+app'),
+      I('ck-2',      'checklist', '2. RSI 35–70', 'Timeframe 15 min, leído en el Data Window (no en 5 min).', 'vigente', 'script+app'),
+      I('ck-3',      'checklist', '3. BB Width < 3.5% y sin expansión', 'El script marca expansión cuando el ancho sube frente a la vela anterior y supera su promedio de 5 velas.', 'validacion', 'script+app', 'Se cuestiona si es demasiado estricta (caso del 17 de julio: valor bajo pero bloqueado por expansión).'),
+      I('ck-4',      'checklist', '4. Entrada antes de las 11:30 AM ET', '', 'vigente', 'script+app'),
+      I('ck-5',      'checklist', '5. No es día de cautela', 'Lunes, miércoles o viernes cuentan como día de riesgo.', 'vigente', 'script+app'),
+
+      I('lc-dw',     'lectura', 'Leer siempre el Data Window', 'La tabla del overlay muestra el estado en vivo del momento de la captura, no el de la vela bajo el cursor.', 'vigente', 'manual'),
+      I('lc-15',     'lectura', 'Prioridad del 15 min', 'Verificar primero el 15 min; el 1 min solo confirma. Si no coinciden, no operar y esperar otra ventana.', 'vigente', 'manual'),
+      I('lc-rsi',    'lectura', 'RSI cerca del borde', 'A menos de ~5 puntos de 70 o de 35 (≥65 / ≤40) es señal de agotamiento, aunque el check diga OK.', 'validacion', 'manual'),
+      I('lc-bb',     'lectura', 'BB Width subiendo', 'Comparar con 2–3 velas atrás; si sube de forma sostenida es expansión real, no un pico aislado.', 'validacion', 'manual', 'El script usa una definición más sensible (una sola vela de alza).'),
+      I('lc-agot',   'lectura', 'Advertencia de agotamiento', 'RSI cerca del borde y BB Width subiendo a la vez: tratarlo como agotamiento aunque el score sea 4–5.', 'validacion', 'manual'),
+      I('lc-vwap',   'lectura', 'EMA contra VWAP', 'Confirmación fuerte: EMA 9/21 y precio vs VWAP apuntan igual. Si se contradicen es señal mixta y se salta esa ventana.', 'validacion', 'script+app', 'El script ya resta el punto de la condición 1 si se contradicen, pero no la marca como "mixta".'),
+      I('lc-rsisos', 'lectura', 'RSI sostenido en extremo (15 min)', 'Con RSI sostenido en sobreventa o sobrecompra extrema no se opera. Distinguir una vela anómala de una condición sostenida antes de cambiar esta regla.', 'validacion', 'manual', 'Origen: sesión del 23 de julio, sin trade por RSI sostenido en sobreventa extrema.'),
+
+      I('di-1dia',   'disciplina', 'Un trade por día', 'Si el primero pierde, no abrir un segundo para recuperar.', 'vigente', 'manual'),
+      I('di-prueba', 'disciplina', 'Trades de prueba', 'Todo trade fuera de reglas se marca como prueba y queda fuera de las métricas.', 'vigente', 'app'),
+      I('di-cuenta', 'disciplina', 'Cuenta de cada trade', 'Registrar cada trade como paper o real para poder comparar ambas etapas.', 'vigente', 'app'),
+      I('di-pase',   'disciplina', 'Criterios para pasar de paper a real', 'Por definir: número de trades bajo las reglas vigentes, expectativa positiva, adherencia mínima y un límite de pérdida para pausar.', 'validacion', 'manual'),
+
+      I('pt-A',      'patrones', 'Patrón A — conflicto 1 min vs 15 min', 'Decisión tomada en el 1 min en contra de la estructura de 15 min (13 y 17 de julio).', 'vigente', 'manual'),
+      I('pt-B',      'patrones', 'Patrón B — RSI en el borde y/o BB Width expandiendo', 'En 15 min, sin reflejarse al leer el score del 1 min (15 de julio).', 'vigente', 'manual'),
+      I('pt-C',      'patrones', 'Patrón C — EMA contra VWAP', 'En conflicto dentro del mismo 15 min (15 y 17 de julio).', 'vigente', 'manual'),
+
+      I('pe-67',     'pendientes', 'Condiciones 6 y 7 en el script', 'Agotamiento (RSI cerca del borde + BB subiendo) y 3 velas de tendencia sostenida. Hoy se verifican a mano.', 'validacion', 'manual'),
+      I('pe-opn',    'pendientes', 'Registrar "oportunidad no tomada"', 'Categoría para acumular casos límite antes de revisar el filtro de RSI en 15 min. La app todavía no la tiene.', 'validacion', 'manual'),
+      I('pe-nofill', 'pendientes', 'Órdenes sin fill', 'La app no tiene un estado para órdenes que no se llenaron.', 'validacion', 'manual'),
+    ],
+    historial: [{
+      version: 1, ts: new Date().toISOString(), fecha: today(), accion: 'alta', itemId: null,
+      titulo: 'Carga inicial', cambios: [],
+      motivo: 'Consolidar en un solo lugar las reglas que estaban repartidas entre el script, la app, el README y las notas.',
+      evidencia: ''
+    }],
+  };
+}
+
+function estrategiaValida(e) {
+  return !!e && Number.isInteger(e.version) && Array.isArray(e.items) && Array.isArray(e.historial);
+}
+function cargarEstrategiaLocal() {
+  try {
+    const e = JSON.parse(localStorage.getItem(ESTRATEGIA_KEY) || 'null');
+    if (estrategiaValida(e)) return e;
+  } catch { /* se usa la semilla */ }
+  const seed = estrategiaSeed();
+  try { localStorage.setItem(ESTRATEGIA_KEY, JSON.stringify(seed)); } catch { /* sin almacenamiento */ }
+  return seed;
+}
+
+let estrategia = cargarEstrategiaLocal();
+let estrategiaSha = null;
+let estTab = 'reglas';
+let estFiltro = 'todas';
+let estEditId = null;
+
+function escEst(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escEstBr(v) { return escEst(v).replace(/\n/g, '<br>'); }
+
+async function ghPutEstrategia() {
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) return 'local';
+  const url = ghApiUrlFor(cfg, 'estrategia.json');
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(estrategia, null, 2))));
+  for (let intento = 0; intento < 2; intento++) {
+    if (!estrategiaSha) {
+      const r = await fetch(url, { headers: ghHeaders(cfg) });
+      if (r.ok) estrategiaSha = (await r.json()).sha;
+    }
+    const res = await fetch(url, {
+      method: 'PUT', headers: ghHeaders(cfg),
+      body: JSON.stringify({ message: `estrategia v${estrategia.version} — ${today()}`, content, ...(estrategiaSha ? { sha: estrategiaSha } : {}) })
+    });
+    if (res.ok) { estrategiaSha = (await res.json()).content.sha; return 'ok'; }
+    if (res.status === 409 || res.status === 422) { estrategiaSha = null; continue; }
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || `HTTP ${res.status}`);
+  }
+  throw new Error('conflicto de versión en GitHub');
+}
+
+function setEstSync(texto, color) {
+  const el = document.getElementById('est-sync');
+  if (el) { el.textContent = texto; el.style.color = color || 'var(--muted)'; }
+}
+
+async function persistirEstrategia() {
+  try { localStorage.setItem(ESTRATEGIA_KEY, JSON.stringify(estrategia)); } catch { /* sin almacenamiento */ }
+  setEstSync('⟳ sincronizando…', 'var(--amber)');
+  try {
+    const r = await ghPutEstrategia();
+    setEstSync(r === 'ok' ? '✓ sincronizada con GitHub' : '◌ solo local (GitHub sin configurar)', r === 'ok' ? 'var(--green)' : 'var(--muted)');
+  } catch (e) {
+    console.error('GitHub estrategia:', e);
+    setEstSync('✗ error de sync — guardada localmente', 'var(--red)');
+    notify(`Error GitHub (estrategia): ${e.message} — guardada localmente`, 'red');
+  }
+}
+
+// Al iniciar: si GitHub tiene una versión más nueva se adopta; si la local es más nueva (o no existe remota) se sube.
+async function cargarEstrategiaGitHub() {
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) { setEstSync('◌ solo local (GitHub sin configurar)'); return; }
+  try {
+    const res = await fetch(ghApiUrlFor(cfg, 'estrategia.json'), { headers: ghHeaders(cfg) });
+    if (res.status === 404) { await ghPutEstrategia(); setEstSync('✓ sincronizada con GitHub', 'var(--green)'); return; }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    estrategiaSha = data.sha;
+    const remota = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+    if (estrategiaValida(remota) && remota.version > estrategia.version) {
+      estrategia = remota;
+      try { localStorage.setItem(ESTRATEGIA_KEY, JSON.stringify(estrategia)); } catch { /* sin almacenamiento */ }
+      actualizarBotonEstrategia();
+      renderEstrategia();
+    } else if (!estrategiaValida(remota) || estrategia.version > remota.version) {
+      await ghPutEstrategia();
+    }
+    setEstSync('✓ sincronizada con GitHub', 'var(--green)');
+  } catch (e) {
+    console.error('GitHub estrategia (carga):', e);
+    setEstSync('✗ error de sync — usando copia local', 'var(--red)');
+  }
+}
+
+function actualizarBotonEstrategia() {
+  const b = document.getElementById('est-btn-ver');
+  if (b) b.textContent = 'v' + estrategia.version;
+}
+
+function openEstrategia() {
+  document.getElementById('est-drawer').classList.add('open');
+  document.getElementById('est-overlay').classList.add('open');
+  renderEstrategia();
+}
+function cerrarEstrategia() {
+  document.getElementById('est-drawer').classList.remove('open');
+  document.getElementById('est-overlay').classList.remove('open');
+}
+function setEstTab(t) { estTab = t; renderEstrategia(); }
+function setEstFiltro(f) { estFiltro = f; renderEstrategia(); }
+
+function estEtiquetaCampo(k, v) {
+  if (k === 'estado') return (EST_ESTADOS[v] || {}).l || v || '—';
+  if (k === 'donde')  return EST_DONDE[v] || v || '—';
+  return v ? v : '—';
+}
+
+function renderEstrategia() {
+  const body = document.getElementById('est-body');
+  if (!body) return;
+  document.getElementById('est-version-badge').textContent = 'v' + estrategia.version;
+  document.getElementById('est-meta').textContent = `Actualizada ${fmtDate(estrategia.actualizado)} · ${estrategia.historial.length} registro${estrategia.historial.length===1?'':'s'} en el historial`;
+  document.getElementById('est-tab-reglas').classList.toggle('active', estTab === 'reglas');
+  document.getElementById('est-tab-historial').classList.toggle('active', estTab === 'historial');
+  body.innerHTML = estTab === 'historial' ? renderEstHistorial() : renderEstReglas();
+}
+
+function renderEstReglas() {
+  const activos = estrategia.items.filter(i => i.estado !== 'descartada');
+  const soloManual = activos.filter(i => i.donde === 'manual').length;
+  const chips = [['todas','Todas'],['vigente','Vigentes'],['validacion','En validación'],['descartada','Descartadas']];
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 4px">
+      <div class="seg">${chips.map(([k,l]) => `<button class="${estFiltro===k?'on':''}" onclick="setEstFiltro('${k}')">${l}</button>`).join('')}</div>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:6px">${soloManual} regla${soloManual===1?'':'s'} activa${soloManual===1?'':'s'} dependen solo de ti (sin automatizar en el script ni en la app).</div>`;
+  EST_SECCIONES.forEach(([sec, label]) => {
+    const items = estrategia.items.filter(i => i.seccion === sec && (estFiltro === 'todas' || i.estado === estFiltro));
+    html += `<div class="est-sec"><span>${label}</span><button class="btn" style="padding:2px 8px;font-size:11px" onclick="openEstEdit(null,'${sec}')">+ Agregar</button></div>`;
+    if (!items.length) { html += `<div style="font-size:12px;color:var(--muted)">Sin reglas en este filtro.</div>`; return; }
+    items.forEach(i => {
+      const est = EST_ESTADOS[i.estado] || EST_ESTADOS.vigente;
+      html += `<div class="est-item ${i.estado==='descartada'?'descartada':''}">
+        <div class="est-item-top">
+          <div class="est-item-title">${escEst(i.titulo)}</div>
+          <button class="btn" style="padding:2px 8px;font-size:11px" onclick="openEstEdit('${i.id}')">✎ Editar</button>
+        </div>
+        ${i.valor ? `<div class="est-item-val">${escEstBr(i.valor)}</div>` : ''}
+        ${i.nota ? `<div class="est-item-nota">${escEstBr(i.nota)}</div>` : ''}
+        <div class="est-badges">
+          <span class="badge ${est.c}">${est.l}</span>
+          <span class="badge ${i.donde==='manual'?'badge-amber':'badge-dim'}">${EST_DONDE[i.donde] || i.donde}</span>
+        </div>
+      </div>`;
+    });
+  });
+  return html;
+}
+
+function renderEstHistorial() {
+  const lista = [...estrategia.historial].sort((a, b) => b.version - a.version);
+  if (!lista.length) return '<div class="empty"><div class="empty-text">Sin cambios registrados</div></div>';
+  const accion = { alta:'Alta', edicion:'Edición' };
+  return '<div style="margin-top:14px">' + lista.map(h => `
+    <div class="est-hist">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="badge badge-accent">v${h.version}</span>
+        <span style="font-family:var(--mono);color:var(--muted)">${fmtDate(h.fecha)}</span>
+        <span class="badge badge-dim">${accion[h.accion] || h.accion}</span>
+      </div>
+      <div style="font-weight:600;margin-top:4px">${escEst(h.titulo)}</div>
+      ${(h.cambios||[]).map(c => `<div style="color:var(--muted)">${escEst(c.campo)}: <span style="color:var(--red)">${escEst(c.antes)}</span> → <span style="color:var(--green)">${escEst(c.despues)}</span></div>`).join('')}
+      <div style="margin-top:3px"><span style="color:var(--muted)">Motivo:</span> ${escEstBr(h.motivo)}</div>
+      ${h.evidencia ? `<div><span style="color:var(--muted)">Evidencia:</span> ${escEstBr(h.evidencia)}</div>` : ''}
+    </div>`).join('') + '</div>';
+}
+
+function openEstEdit(id, seccion) {
+  estEditId = id;
+  const it = id ? estrategia.items.find(x => x.id === id) : null;
+  if (id && !it) return;
+  const v = it || { seccion: seccion || 'parametros', titulo: '', valor: '', nota: '', estado: 'validacion', donde: 'manual' };
+  document.getElementById('est-edit-titulo').textContent = it ? 'Editar regla' : 'Agregar regla';
+  document.getElementById('est-edit-body').innerHTML = `
+    <div class="form-row g2">
+      <div><label class="form-label">Sección</label>
+        <select class="form-control" id="ee-seccion" ${it?'disabled':''}>
+          ${EST_SECCIONES.map(([k,l]) => `<option value="${k}" ${v.seccion===k?'selected':''}>${l}</option>`).join('')}
+        </select></div>
+      <div><label class="form-label">Estado</label>
+        <select class="form-control" id="ee-estado">
+          ${Object.entries(EST_ESTADOS).map(([k,e]) => `<option value="${k}" ${v.estado===k?'selected':''}>${e.l}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="form-row">
+      <div><label class="form-label">Título</label>
+        <input class="form-control" id="ee-titulo" value="${escEst(v.titulo)}"></div>
+    </div>
+    <div class="form-row">
+      <div><label class="form-label">Regla / valor</label>
+        <textarea class="form-control" id="ee-valor" rows="3">${escEst(v.valor)}</textarea></div>
+    </div>
+    <div class="form-row">
+      <div><label class="form-label">Nota (opcional)</label>
+        <input class="form-control" id="ee-nota" value="${escEst(v.nota)}"></div>
+    </div>
+    <div class="form-row">
+      <div><label class="form-label">Dónde se aplica</label>
+        <select class="form-control" id="ee-donde">
+          ${Object.entries(EST_DONDE).map(([k,l]) => `<option value="${k}" ${v.donde===k?'selected':''}>${l}</option>`).join('')}
+        </select></div>
+    </div>
+    <div style="margin-top:6px;padding:10px;background:var(--bg3);border-radius:var(--r)">
+      <div class="form-row">
+        <div><label class="form-label">Motivo del cambio (obligatorio)</label>
+          <textarea class="form-control" id="ee-motivo" rows="2" placeholder="Por qué cambia esta regla"></textarea></div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <div><label class="form-label">Evidencia (opcional)</label>
+          <input class="form-control" id="ee-evidencia" placeholder="Fechas o trades que lo respaldan, ej. 15 y 17 de julio"></div>
+      </div>
+    </div>`;
+  document.getElementById('est-edit-modal').classList.add('open');
+}
+function closeEstEdit() { document.getElementById('est-edit-modal').classList.remove('open'); estEditId = null; }
+
+function saveEstEdit() {
+  const g = x => document.getElementById(x).value.trim();
+  const datos = { titulo: g('ee-titulo'), valor: g('ee-valor'), nota: g('ee-nota'), estado: g('ee-estado'), donde: g('ee-donde') };
+  const motivo = g('ee-motivo'), evidencia = g('ee-evidencia');
+  if (!datos.titulo) { notify('Escribe un título'); return; }
+  if (!motivo)       { notify('Escribe el motivo del cambio'); return; }
+
+  let entrada;
+  if (estEditId) {
+    const it = estrategia.items.find(x => x.id === estEditId);
+    if (!it) return;
+    const campos = [['titulo','Título'],['valor','Regla'],['nota','Nota'],['estado','Estado'],['donde','Dónde se aplica']];
+    const cambios = campos.filter(([k]) => (it[k] || '') !== datos[k])
+      .map(([k, l]) => ({ campo: l, antes: estEtiquetaCampo(k, it[k]), despues: estEtiquetaCampo(k, datos[k]) }));
+    if (!cambios.length) { notify('No hay cambios que guardar'); return; }
+    Object.assign(it, datos);
+    entrada = { accion: 'edicion', itemId: it.id, titulo: datos.titulo, cambios };
+  } else {
+    const sec = g('ee-seccion');
+    const nid = sec.slice(0, 2) + '-' + Date.now().toString(36);
+    estrategia.items.push({ id: nid, seccion: sec, ...datos });
+    const labelSec = (EST_SECCIONES.find(([k]) => k === sec) || [])[1] || sec;
+    entrada = { accion: 'alta', itemId: nid, titulo: datos.titulo, cambios: [{ campo: 'Nueva regla en ' + labelSec, antes: '—', despues: datos.valor || datos.titulo }] };
+  }
+  estrategia.version += 1;
+  estrategia.actualizado = today();
+  estrategia.historial.push({ version: estrategia.version, ts: new Date().toISOString(), fecha: today(), ...entrada, motivo, evidencia });
+  persistirEstrategia();
+  closeEstEdit();
+  renderEstrategia();
+  actualizarBotonEstrategia();
+  notify(`Estrategia actualizada a v${estrategia.version} ✓`, 'green');
+}
+
+/* ═══════════════════════════════════════════════════
+   REPORTES FASE 4: régimen de mercado y modelo vs real
+═══════════════════════════════════════════════════ */
+const MIN_N_MEDIDA = 8;   // trades cerrados con la medida para comparar mitades
+const MIN_GRUPO    = 3;   // mínimo por mitad para mostrar resultados
+
+function mediana(arr) {
+  const a = [...arr].sort((x, y) => x - y), m = Math.floor(a.length / 2);
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+function minutosEntre(h1, h2) {
+  const f = h => { if (!h || !/^\d{1,2}:\d{2}/.test(h)) return null; const [a, b] = h.split(':').map(Number); return a * 60 + b; };
+  const a = f(h1), b = f(h2);
+  return (a === null || b === null || b < a) ? null : b - a;
+}
+const tieneVal = v => v !== null && v !== undefined && Number.isFinite(v);
+const num2 = v => tieneVal(v) ? v.toFixed(2) : '—';
+
+// Divide en mitad baja / alta por la mediana. Con muchos empates (ej. 0 cruces) intenta el corte contrario.
+function dividirPorMediana(items, key) {
+  const med = mediana(items.map(t => t[key]));
+  let lo = items.filter(t => t[key] <= med), hi = items.filter(t => t[key] > med);
+  if (!hi.length) { lo = items.filter(t => t[key] < med); hi = items.filter(t => t[key] >= med); }
+  return { med, lo, hi };
+}
+function celdaGrupo(list) {
+  if (list.length < MIN_GRUPO) return `<span style="color:var(--muted)">n=${list.length} (mín. ${MIN_GRUPO})</span>`;
+  const st = stats(list);
+  return `n=${st.total} · WR ${(st.wr*100).toFixed(0)}% · <span class="${st.expect>=0?'green':'red'}">${fmtMoney2(st.expect)}/trade</span>`;
+}
+
+function renderReporteRegimen() {
+  const cl = closedTrades();
+  const tiene = (t, c) => tieneVal(t[c.k]);
+
+  // 1) cobertura
+  const barra = pct => `<div style="height:6px;background:var(--bg4);border-radius:3px;min-width:80px"><div style="height:6px;width:${Math.min(100, pct)}%;background:var(--accent);border-radius:3px"></div></div>`;
+  const filaCob = (label, n, total, meta) => `<tr><td>${label}</td><td style="font-family:var(--mono)">${n} de ${total}</td><td>${barra(total ? n / total * 100 : 0)}</td><td style="font-size:11.5px;color:var(--muted)">${meta}</td></tr>`;
+  const completo = cl.filter(t => REG_CAMPOS.every(c => tiene(t, c))).length;
+  document.getElementById('r-reg-cob').innerHTML = cl.length
+    ? `<table><thead><tr><th>Dato</th><th>Trades</th><th></th><th>Para comparar mitades</th></tr></thead><tbody>` +
+      REG_CAMPOS.map(c => { const n = cl.filter(t => tiene(t, c)).length; return filaCob(c.label, n, cl.length, n >= MIN_N_MEDIDA ? 'suficiente' : `faltan ${MIN_N_MEDIDA - n}`); }).join('') +
+      filaCob('Tipo de mercado etiquetado', cl.filter(t => t.tipoMercado).length, cl.length, '') +
+      filaCob('Con las 6 medidas completas', completo, cl.length, '') + '</tbody></table>'
+    : '<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin trades cerrados</div></div>';
+
+  // 2) por tipo de mercado
+  const grupos = [['tendencia', 'Tendencia'], ['chop', 'Chop / lateral'], ['momentum', 'Momentum (primera hora)'], ['', 'Sin clasificar']];
+  const avg = (list, k) => { const v = list.filter(t => tieneVal(t[k])).map(t => t[k]); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  let h = `<table><thead><tr><th>Tipo</th><th>Trades</th><th>Win rate</th><th>P&amp;L</th><th>Expectativa</th><th>% camino a TP medio (pérdidas)</th></tr></thead><tbody>`;
+  grupos.forEach(([k, label]) => {
+    const l = cl.filter(t => (t.tipoMercado || '') === k);
+    if (!l.length) { h += `<tr><td>${label}</td><td colspan="5" style="color:var(--muted)">0 trades</td></tr>`; return; }
+    const st = stats(l);
+    const mfe = avg(l.filter(t => t.pnl < 0), 'pctHaciaTP');
+    h += `<tr><td>${label}</td><td>${st.total}</td><td>${(st.wr*100).toFixed(0)}%</td><td>${fmtMoney(st.pnl)}</td><td style="font-family:var(--mono)">${fmtMoney2(st.expect)}</td><td>${mfe === null ? '—' : mfe.toFixed(0) + '%'}</td></tr>`;
+  });
+  h += '</tbody></table>';
+  h += `<div style="font-size:12px;font-weight:600;margin:14px 0 6px">Medias de cada medida según tu etiqueta</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px">Muestra qué valores acompañan a lo que tú llamas tendencia o chop. De aquí saldrían los umbrales, cuando haya muestra.</div>
+        <table><thead><tr><th>Tipo</th><th>ATR</th><th>ATR d.</th><th>Gap</th><th>Rango ap.</th><th>Cruces</th><th>Efic.</th></tr></thead><tbody>`;
+  grupos.forEach(([k, label]) => {
+    const l = cl.filter(t => (t.tipoMercado || '') === k);
+    if (!l.length) return;
+    h += `<tr><td>${label} <span style="color:var(--muted)">(${l.length})</span></td>` + REG_CAMPOS.map(c => `<td style="font-family:var(--mono)">${num2(avg(l, c.k))}</td>`).join('') + '</tr>';
+  });
+  h += '</tbody></table>';
+  document.getElementById('r-reg-tipo').innerHTML = cl.length ? h : '';
+
+  // 3) cada medida frente al resultado
+  let m = `<table><thead><tr><th>Medida</th><th>Mediana</th><th>Mitad baja (≤ mediana)</th><th>Mitad alta</th></tr></thead><tbody>`;
+  REG_CAMPOS.forEach(c => {
+    const items = cl.filter(t => tiene(t, c));
+    if (items.length < MIN_N_MEDIDA) { m += `<tr><td>${c.label}</td><td colspan="3" style="color:var(--muted)">n=${items.length} — faltan ${MIN_N_MEDIDA - items.length} trades con este dato para compararlo</td></tr>`; return; }
+    const { med, lo, hi } = dividirPorMediana(items, c.k);
+    if (!lo.length || !hi.length) { m += `<tr><td>${c.label}</td><td style="font-family:var(--mono)">${num2(med)}</td><td colspan="2" style="color:var(--muted)">sin variación suficiente para dividir (valores repetidos)</td></tr>`; return; }
+    m += `<tr><td>${c.label}</td><td style="font-family:var(--mono)">${num2(med)}</td><td style="font-size:12px">${celdaGrupo(lo)}</td><td style="font-size:12px">${celdaGrupo(hi)}</td></tr>`;
+  });
+  m += '</tbody></table>';
+  document.getElementById('r-reg-medidas').innerHTML = m;
+
+  // 4) lista
+  const conAlguna = cl.filter(t => REG_CAMPOS.some(c => tiene(t, c)) || t.tipoMercado).sort((a, b) => a.fecha < b.fecha ? 1 : -1);
+  document.getElementById('r-reg-lista').innerHTML = conAlguna.length
+    ? `<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Etiqueta</th><th>ATR</th><th>Gap</th><th>Rango ap.</th><th>Cruces</th><th>Efic.</th><th>P&amp;L</th></tr></thead><tbody>` +
+      conAlguna.map(t => `<tr onclick="openEdit('${t.id}')" style="cursor:pointer"><td>${fmtDate(t.fecha)}</td><td>${t.ticker} ${t.tipo}</td><td>${TIPOS_MERCADO[t.tipoMercado] || '—'}</td><td style="font-family:var(--mono)">${num2(t.regAtr)}</td><td style="font-family:var(--mono)">${num2(t.regGap)}</td><td style="font-family:var(--mono)">${num2(t.regRangoAp)}</td><td style="font-family:var(--mono)">${tieneVal(t.regCruces) ? t.regCruces : '—'}</td><td style="font-family:var(--mono)">${num2(t.regEfic)}</td><td class="${t.pnl>=0?'green':'red'}">${fmtMoney(t.pnl)}</td></tr>`).join('') + '</tbody></table>'
+    : '<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Ningún trade tiene medidas registradas todavía. Llénalas en Nuevo Trade o en Editar.</div></div>';
+}
+
+function renderReporteModelo() {
+  const cl = closedTrades();
+  const filas = cl.filter(t => tieneVal(t.spyEntryPrice) && tieneVal(t.spyExitPrice) && tieneVal(t.delta) && tieneVal(t.primaOut)).map(t => {
+    const dir  = t.tipo === 'PUT' ? -1 : 1;
+    const mov  = (t.spyExitPrice - t.spyEntryPrice) * dir;     // pts de SPY a favor (+) o en contra (−)
+    const real = t.primaOut - t.prima;                         // $ por acción
+    const pred = t.delta * mov;                                // modelo de solo delta
+    return { t, mov, real, pred, res: real - pred, efec: Math.abs(mov) >= 0.2 ? real / mov : null, min: minutosEntre(t.hora, t.horaOut) };
+  });
+  const resEl = document.getElementById('r-mod-resumen'), tabEl = document.getElementById('r-mod-tabla');
+  if (!filas.length) {
+    resEl.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Ningún trade cerrado tiene los 4 datos necesarios (${cl.length} cerrados en esta vista). Llena SPY al entrar y SPY al salir en Editar.</div></div>`;
+    tabEl.innerHTML = '';
+    return;
+  }
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const fav = filas.filter(f => f.mov > 0), con = filas.filter(f => f.mov < 0);
+  const efecs = filas.filter(f => f.efec !== null).map(f => f.efec);
+  const resPct = mean(filas.map(f => f.res / f.t.prima * 100));
+  const lineaGrupo = (label, l) => l.length ? `<tr><td>${label}</td><td>${l.length}</td><td style="font-family:var(--mono)">${mean(l.map(f => f.mov)).toFixed(2)} pts</td><td style="font-family:var(--mono)">${fmtMoney2(mean(l.map(f => f.real)))}</td><td style="font-family:var(--mono)">${fmtMoney2(mean(l.map(f => f.pred)))}</td><td style="font-family:var(--mono)" class="${mean(l.map(f=>f.res))>=0?'green':'red'}">${fmtMoney2(mean(l.map(f => f.res)))}</td></tr>` : '';
+  resEl.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${filas.length} de ${cl.length} trades cerrados tienen los datos necesarios.</div>
+    <table><thead><tr><th>Grupo</th><th>Trades</th><th>Mov. SPY medio</th><th>Δ prima real</th><th>Δ prima predicha</th><th>Residuo medio</th></tr></thead><tbody>
+      ${lineaGrupo('Todos', filas)}${lineaGrupo('SPY fue a tu favor', fav)}${lineaGrupo('SPY fue en tu contra', con)}
+    </tbody></table>
+    <div style="margin-top:10px;font-size:12px;line-height:1.7">
+      Residuo medio: <strong class="${resPct>=0?'green':'red'}">${resPct>=0?'+':''}${resPct.toFixed(0)}%</strong> de la prima de entrada.
+      ${efecs.length ? `Delta efectivo mediano (Δ prima ÷ movimiento, solo con movimientos de 0.2 pts o más): <strong>${mediana(efecs).toFixed(2)}</strong> frente a un delta de entrada medio de <strong>${mean(filas.map(f => f.t.delta)).toFixed(2)}</strong>.` : 'Ningún trade tuvo un movimiento de 0.2 pts o más para estimar el delta efectivo.'}
+    </div>
+    <div style="margin-top:8px;font-size:11.5px;color:var(--muted);line-height:1.7">Residuo positivo: la prima rindió más de lo que predice el delta (típico del gamma cuando el precio va a tu favor). Negativo: rindió menos (theta, spread, caída de volatilidad). ${filas.length < 10 ? 'Con menos de 10 trades es solo una primera impresión.' : ''}</div>`;
+
+  tabEl.innerHTML = `<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Mov. SPY</th><th>Δ prima real</th><th>Δ predicha</th><th>Residuo</th><th>Delta efectivo</th><th>Min.</th></tr></thead><tbody>` +
+    [...filas].sort((a, b) => a.t.fecha < b.t.fecha ? 1 : -1).map(f => `<tr onclick="openEdit('${f.t.id}')" style="cursor:pointer"><td>${fmtDate(f.t.fecha)}</td><td>${f.t.ticker} ${f.t.tipo}</td><td style="font-family:var(--mono)">${f.mov>=0?'+':''}${f.mov.toFixed(2)}</td><td style="font-family:var(--mono)">${fmtMoney2(f.real)}</td><td style="font-family:var(--mono)">${fmtMoney2(f.pred)}</td><td style="font-family:var(--mono)" class="${f.res>=0?'green':'red'}">${fmtMoney2(f.res)}</td><td style="font-family:var(--mono)">${f.efec === null ? '—' : f.efec.toFixed(2)}</td><td>${f.min === null ? '—' : f.min}</td></tr>`).join('') + '</tbody></table>';
+}
+
+function renderReportePorVersion() {
+  const el = document.getElementById('r-ver-table');
+  const grupos = {};
+  closedTrades().forEach(t => { const v = t.versionEstrategia || 0; (grupos[v] = grupos[v] || []).push(t); });
+  const versiones = Object.keys(grupos).map(Number).sort((a, b) => a - b);
+  if (!versiones.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin trades cerrados</div></div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Versión</th><th>Cambio</th><th>Trades</th><th>Win rate</th><th>P&amp;L</th><th>Expectativa</th></tr></thead><tbody>` +
+    versiones.map(v => {
+      const st = stats(grupos[v]);
+      const h = v ? estrategia.historial.find(x => x.version === v) : null;
+      const cambio = v === 0 ? 'Anteriores al registro de versiones' : h ? `${escEst(h.titulo)} — ${escEst(h.motivo)}` : '—';
+      return `<tr><td style="font-family:var(--mono)">${v ? 'v'+v : 'Sin versión'}</td><td style="font-size:12px">${cambio}</td><td>${st.total}</td><td>${(st.wr*100).toFixed(0)}%</td><td>${fmtMoney(st.pnl)}</td><td style="font-family:var(--mono)">${fmtMoney2(st.expect)}</td></tr>`;
+    }).join('') + '</tbody></table>';
+}
 
 /* ═══════════════════════════════════════════════════
    CAPTURAS DE TRADINGVIEW — capturas/{tradeId}_{tf}.jpg en el repo
@@ -983,7 +1612,63 @@ async function borrarTodasCapturas(tradeId, capturas) {
 
 let trades = JSON.parse(localStorage.getItem('ot_0dte_trades') || '[]');
 let editingId = null;
-let chartEquity, chartDist, chartPnl, rChartEquity, rChartTipo, rChartMes, rChartTicker, rChartHora;
+let chartEquity, chartDist, chartPnl, rChartEquity, rChartTipo, rChartMes, rChartTicker, rChartHora, rChartPR;
+
+/* ═══════════════════════════════════════════════════
+   MODO DE CUENTA (paper / real)
+   - Cada trade guarda t.modo ('paper' | 'real'). Si no existe (trades anteriores), se trata como 'paper'.
+   - modoVista filtra dashboard, historial y reportes (todos | paper | real).
+   - modoNuevo es la cuenta con la que se registra el siguiente trade.
+═══════════════════════════════════════════════════ */
+const MODO_VISTA_KEY = 'ot_0dte_modo_vista';
+const MODO_NUEVO_KEY = 'ot_0dte_modo_nuevo';
+let modoVista = localStorage.getItem(MODO_VISTA_KEY);
+if (!['todos','paper','real'].includes(modoVista)) modoVista = 'todos';
+let modoNuevo = localStorage.getItem(MODO_NUEVO_KEY) === 'real' ? 'real' : 'paper';
+
+function modoDe(t) { return t.modo === 'real' ? 'real' : 'paper'; }
+function tradesVista() { return modoVista === 'todos' ? trades : trades.filter(t => modoDe(t) === modoVista); }
+function modoBadge(t) {
+  return modoDe(t) === 'real'
+    ? '<span class="badge badge-real" style="font-size:9px;vertical-align:middle">REAL</span>'
+    : '<span class="badge badge-dim" style="font-size:9px;vertical-align:middle">PAPER</span>';
+}
+
+function actualizarSegVista() {
+  document.querySelectorAll('#modo-vista-seg button').forEach(b => b.classList.toggle('on', b.dataset.m === modoVista));
+}
+
+function setModoVista(m) {
+  modoVista = m;
+  localStorage.setItem(MODO_VISTA_KEY, m);
+  actualizarSegVista();
+  const pg = document.querySelector('.page.active');
+  const id = pg ? pg.id.replace('page-', '') : '';
+  if (id === 'dashboard') renderDashboard();
+  else if (id === 'historial') renderHistorial();
+  else if (id === 'reportes') {
+    const tab = document.querySelector('.tab-panel.active');
+    showReportTab(tab ? tab.id.replace('rtab-', '') : 'resumen');
+  }
+  updateSidebar();
+}
+
+function setModoNuevo(m) {
+  modoNuevo = m === 'real' ? 'real' : 'paper';
+  localStorage.setItem(MODO_NUEVO_KEY, modoNuevo);
+  const pb = document.getElementById('modo-nuevo-paper'), rb = document.getElementById('modo-nuevo-real');
+  if (pb) pb.classList.toggle('on', modoNuevo === 'paper');
+  if (rb) rb.classList.toggle('on', modoNuevo === 'real');
+  const msg = document.getElementById('modo-nuevo-msg');
+  if (msg) {
+    msg.textContent = modoNuevo === 'real' ? 'Este trade se registrará como DINERO REAL.' : 'Este trade se registrará como paper money.';
+    msg.style.color = modoNuevo === 'real' ? 'var(--real)' : 'var(--muted)';
+  }
+  const pg = document.getElementById('page-nueva');
+  if (pg) pg.classList.toggle('modo-real', modoNuevo === 'real');
+  const sb = document.getElementById('btn-save-trade');
+  if (sb) sb.textContent = modoNuevo === 'real' ? 'Guardar trade REAL →' : 'Guardar trade →';
+}
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -1107,7 +1792,7 @@ function navigate(page) {
   if (page === 'dashboard')   renderDashboard();
   if (page === 'historial')   renderHistorial();
   if (page === 'reportes')    renderReportes();
-  if (page === 'calculadora') { updateCalc(); updateDeltaViz(46); }
+  if (page === 'calculadora') { prefillMinCierre(); updateDeltaViz(document.getElementById('delta-range').value); updateCalc(); }
   if (page === 'nueva') {
     document.getElementById('f-fecha').value = today();
     // Pre-fill hora actual ET
@@ -1116,6 +1801,7 @@ function navigate(page) {
     // Reinicia el checklist y el score cada vez que se abre esta página
     document.querySelectorAll('#quick-checks .toggle.on').forEach(t=>t.classList.remove('on'));
     document.getElementById('f-prueba').checked = false;
+    setModoNuevo(modoNuevo);
     updateQuickScore();
     calcOCOInline();
   }
@@ -1137,7 +1823,9 @@ function fmtMoney2(v) {
    SIDEBAR BUDGET
 ═══════════════════════════════════════════════════ */
 function updateSidebar() {
-  const closed = trades.filter(t => t.estado !== 'abierto' && !t.esPrueba);
+  const lbl = document.getElementById('sb-budget-label');
+  if (lbl) lbl.textContent = modoVista === 'real' ? 'CAPITAL · REAL' : modoVista === 'paper' ? 'CAPITAL · PAPER' : 'CAPITAL · COMBINADO';
+  const closed = closedTrades();
   const pnl    = closed.reduce((a,t) => a + (t.pnl||0), 0);
   const current = BUDGET + pnl;
   const pct    = Math.max(0, Math.min(100, (current/BUDGET)*100));
@@ -1151,7 +1839,7 @@ function updateSidebar() {
    DASHBOARD
 ═══════════════════════════════════════════════════ */
 function renderDashboard() {
-  const closed = trades.filter(t => t.estado !== 'abierto' && !t.esPrueba);
+  const closed = closedTrades();
   const pnl    = closed.reduce((a,t) => a+(t.pnl||0), 0);
   const wins   = closed.filter(t => t.pnl > 0).length;
   const wr     = closed.length ? Math.round(wins/closed.length*100) : null;
@@ -1179,7 +1867,7 @@ function renderDashboard() {
   stEl.className   = 'stat-val ' + (streakType==='win'?'green':streakType==='loss'?'red':'');
   document.getElementById('s-streak-meta').textContent = streak ? (streakType==='win'?'racha ganadora':'racha perdedora') : '—';
 
-  const tod = trades.filter(t=>t.fecha===today()).length;
+  const tod = tradesVista().filter(t=>t.fecha===today()).length;
   document.getElementById('s-today').textContent = tod;
   document.getElementById('s-today').className   = 'stat-val ' + (tod>=1?'amber':'green');
   document.getElementById('s-today-meta').textContent = tod>=1?'límite alcanzado':'máx 1/día';
@@ -1187,7 +1875,7 @@ function renderDashboard() {
   buildEquityChart();
   buildDistChart();
 
-  const recent = [...trades].sort((a,b)=>b.fecha>a.fecha?1:(b.hora||'')>(a.hora||'')?1:-1).slice(0,5);
+  const recent = [...tradesVista()].sort((a,b)=>b.fecha>a.fecha?1:(b.hora||'')>(a.hora||'')?1:-1).slice(0,5);
   const rl = document.getElementById('dash-recent-list');
   if (!recent.length) {
     rl.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-text">Sin trades registrados</div></div>';
@@ -1200,6 +1888,7 @@ function renderDashboard() {
         <div class="tl-content">
           <div class="tl-header">
             <span class="tl-ticker">${t.ticker}</span>
+            ${modoBadge(t)}
             <span class="badge ${t.tipo==='CALL'?'badge-green':'badge-red'}">${t.tipo}</span>
             <span class="badge badge-dim">Δ${t.delta||'—'}</span>
             ${horaTag}
@@ -1240,7 +1929,7 @@ const CHART_BASE = { responsive:true, maintainAspectRatio:false, plugins:{ legen
 function buildEquityChart() {
   const ctx = document.getElementById('chart-equity').getContext('2d');
   if (chartEquity) chartEquity.destroy();
-  const sorted = [...trades].filter(t=>t.estado!=='abierto' && !t.esPrueba).sort((a,b)=>a.fecha>b.fecha?1:-1);
+  const sorted = [...closedTrades()].sort((a,b)=>a.fecha>b.fecha?1:-1);
   let run = BUDGET;
   const labels=['Inicio'], data=[run];
   sorted.forEach(t=>{ run+=(t.pnl||0); labels.push(fmtDate(t.fecha)); data.push(run); });
@@ -1255,11 +1944,11 @@ function buildEquityChart() {
 function buildDistChart() {
   const ctx = document.getElementById('chart-dist').getContext('2d');
   if (chartDist) chartDist.destroy();
-  const closed = trades.filter(t=>t.estado!=='abierto' && !t.esPrueba);
+  const closed = closedTrades();
   const wins    = closed.filter(t=>t.pnl>0).length;
   const losses  = closed.filter(t=>t.pnl<0).length;
   const forzado = closed.filter(t=>t.estado==='forzado').length;
-  const open    = trades.filter(t=>t.estado==='abierto').length;
+  const open    = tradesVista().filter(t=>t.estado==='abierto').length;
   chartDist = new Chart(ctx, {
     type:'doughnut',
     data:{ labels:['Ganancias','Pérdidas','Forzado','Abiertos'], datasets:[{ data:[wins,losses,forzado,open], backgroundColor:[CC.green,CC.red,CC.blue,CC.amber], borderWidth:0, hoverOffset:4 }] },
@@ -1275,7 +1964,7 @@ function toggleCheck(el) { el.classList.toggle('on'); }
 // Labels del checklist rápido, en el mismo orden que los toggles de #quick-checks.
 const CHECKLIST_LABELS = [
   'EMA 9 > EMA 21 + precio sobre VWAP',
-  'RSI 35–70 (5 min)',
+  'RSI 35–70 (15 min)',
   'BB Width < 3.5% y sin expansión',
   'Entrada antes 11:30 AM ET',
   'No es Lun / Mié / Vie con riesgo',
@@ -1528,7 +2217,8 @@ function fillFormFromTos(idx) {
   calcOCOInline();
   calcResultado();
   document.getElementById('tos-import-status').innerHTML +=
-    `<div style="color:var(--green);font-size:12px;margin-top:6px">✓ Cargado: ${t.ticker} ${t.strike} ${t.tipo} — completa RSI / BB Width / Score / Delta antes de guardar.</div>`;
+    `<div style="color:var(--green);font-size:12px;margin-top:6px">✓ Cargado: ${t.ticker} ${t.strike} ${t.tipo} — completa RSI / BB Width / Score / Delta antes de guardar.</div>
+     <div style="font-size:12px;margin-top:4px;color:${modoNuevo==='real'?'var(--real)':'var(--muted)'}">Cuenta seleccionada: <strong>${modoNuevo==='real'?'DINERO REAL':'PAPER MONEY'}</strong> (cámbiala arriba si este archivo es de la otra cuenta).</div>`;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1564,11 +2254,64 @@ function calcResultado() {
 /* ═══════════════════════════════════════════════════
    SAVE TRADE
 ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   MEDIDAS DE RÉGIMEN (chop vs tendencia) + tipo de mercado
+   Se leen del Data Window del script (gráfico de 15 min, cursor en la vela de entrada) y se guardan en cada trade
+   como datos crudos, para que los umbrales salgan de tus trades. Todas son opcionales: una serie que aún no existe a esa hora
+   (eficiencia antes de las 10:30, rango de apertura antes de las 10:00) se deja vacía y se guarda como null.
+   Ojo: 0 es un valor válido (0 cruces, eficiencia 0), por eso no se usa el patrón parseFloat(...)||null.
+═══════════════════════════════════════════════════ */
+const REG_CAMPOS = [
+  { k:'regAtr',       id:'atr',    label:'ATR pts',                     step:'0.01', min:0,           ph:'0.65' },
+  { k:'regAtrDiario', id:'atrd',   label:'ATR diario pts',              step:'0.01', min:0,           ph:'6.10' },
+  { k:'regGap',       id:'gap',    label:'Gap apertura / ATR diario',   step:'0.01', min:0,           ph:'0.20' },
+  { k:'regRangoAp',   id:'ap',     label:'Rango apertura / ATR diario', step:'0.01', min:0,           ph:'0.35' },
+  { k:'regCruces',    id:'cruces', label:'Cruces VWAP hoy',             step:'1',    min:0, entero:true, ph:'2' },
+  { k:'regEfic',      id:'efic',   label:'Eficiencia precio (0–1)',     step:'0.01', min:0, max:1,     ph:'0.45' },
+];
+const TIPOS_MERCADO = { tendencia:'Tendencia', chop:'Chop / lateral', momentum:'Momentum (primera hora)' };
+
+function regimenHtml(prefix, t) {
+  t = t || {};
+  const campo = c => `<div><label class="form-label">${c.label}</label>
+      <input class="form-control" id="${prefix}${c.id}" type="number" step="${c.step}" min="${c.min}"${c.max !== undefined ? ` max="${c.max}"` : ''} value="${t[c.k] ?? ''}" placeholder="${c.ph}"></div>`;
+  const tipo = t.tipoMercado || '';
+  return `
+    <label class="form-label" style="margin-top:10px;display:block">Medidas de régimen — Data Window del script, 15 min (opcional)</label>
+    <div class="form-row g3">${REG_CAMPOS.slice(0, 3).map(campo).join('')}</div>
+    <div class="form-row g3">${REG_CAMPOS.slice(3).map(campo).join('')}</div>
+    <div class="form-row g2">
+      <div><label class="form-label">Tipo de mercado (tu lectura)</label>
+        <select class="form-control" id="${prefix}tipo">
+          <option value="">Sin clasificar</option>
+          ${Object.entries(TIPOS_MERCADO).map(([k, l]) => `<option value="${k}" ${tipo === k ? 'selected' : ''}>${l}</option>`).join('')}
+        </select></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Léelos con el cursor en la vela de entrada. Si una serie aún no existe a esa hora (eficiencia antes de las 10:30, rango de apertura antes de las 10:00), déjala vacía.</div>`;
+}
+
+// Lee y valida los campos de régimen. Devuelve { valores } o { error }.
+function leerRegimen(prefix) {
+  const out = {};
+  for (const c of REG_CAMPOS) {
+    const raw = document.getElementById(prefix + c.id).value.trim();
+    if (raw === '') { out[c.k] = null; continue; }
+    const v = Number(raw);
+    if (!Number.isFinite(v) || v < c.min || (c.max !== undefined && v > c.max) || (c.entero && !Number.isInteger(v)))
+      return { error: `${c.label}: valor no válido${c.max !== undefined ? ` (entre ${c.min} y ${c.max})` : c.entero ? ' (entero desde 0)' : ' (desde 0)'}` };
+    out[c.k] = v;
+  }
+  out.tipoMercado = document.getElementById(prefix + 'tipo').value || '';
+  return { valores: out };
+}
+
 function saveTrade() {
   const ticker = document.getElementById('f-ticker').value.trim().toUpperCase();
   const prima  = parseFloat(document.getElementById('f-prima').value);
   if (!ticker) { notify('Ingresa el ticker'); return; }
   if (!prima || prima <= 0) { notify('Ingresa la prima de entrada'); return; }
+  const reg = leerRegimen('f-reg-');
+  if (reg.error) { notify(reg.error); return; }
 
   const estado    = document.getElementById('f-estado').value;
   const primaOut  = estado!=='abierto' ? parseFloat(document.getElementById('f-prima-out').value)||null : null;
@@ -1591,6 +2334,11 @@ function saveTrade() {
     strike: parseFloat(document.getElementById('f-strike').value)||null,
     delta:  parseFloat(document.getElementById('f-delta').value)||null,
     prima, contratos,
+    modo: modoNuevo,
+    versionEstrategia: estrategia.version,
+    primaRef: parseFloat(document.getElementById('f-prima-ref').value)||null,
+    spyExitPrice: estado!=='abierto' ? (parseFloat(document.getElementById('f-spy-out').value)||null) : null,
+    ...reg.valores,
     iv:    parseFloat(document.getElementById('f-iv').value)||null,
     rsi:   parseFloat(document.getElementById('f-rsi').value)||null,
     score: parseInt(scoreText[0]),
@@ -1603,13 +2351,13 @@ function saveTrade() {
 
   trades.push(trade);
   save();
-  notify('Trade guardado ✓', 'green');
+  notify(modoNuevo === 'real' ? 'Trade REAL guardado ✓' : 'Trade guardado ✓', 'green');
   resetForm();
   navigate('historial');
 }
 
 function resetForm() {
-  ['f-ticker','f-strike','f-delta','f-prima','f-iv','f-rsi','f-notas','f-prima-out'].forEach(id => {
+  ['f-ticker','f-strike','f-delta','f-prima','f-prima-ref','f-iv','f-rsi','f-notas','f-prima-out','f-spy-out'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1619,6 +2367,7 @@ function resetForm() {
   document.getElementById('f-ticker').value    = 'SPY';
   document.getElementById('f-score').value    = '5 — Entrada válida';
   document.getElementById('f-prueba').checked  = false;
+  document.getElementById('f-regimen-block').innerHTML = regimenHtml('f-reg-', {});
   document.getElementById('cierre-fields').style.display = 'none';
   document.getElementById('f-oco-preview').innerHTML = '';
   document.getElementById('resultado-calc').innerHTML = '';
@@ -1647,7 +2396,7 @@ function renderHistorial() {
   const mes    = document.getElementById('filter-mes').value;
   const hora   = document.getElementById('filter-hora').value;
 
-  let filtered = [...trades].sort((a,b) => {
+  let filtered = [...tradesVista()].sort((a,b) => {
     if (b.fecha !== a.fecha) return b.fecha > a.fecha ? 1 : -1;
     return (b.hora||'') > (a.hora||'') ? 1 : -1;
   });
@@ -1670,7 +2419,7 @@ function renderHistorial() {
     return `<tr>
       <td>${fmtDate(t.fecha)}</td>
       <td style="color:${horaColor};font-family:var(--mono)">${t.hora||'—'}</td>
-      <td style="font-weight:600">${t.ticker}${t.esPrueba?' <span class="badge badge-amber" style="font-size:9px;vertical-align:middle">PRUEBA</span>':''}</td>
+      <td style="font-weight:600">${t.ticker} ${modoBadge(t)}${t.esPrueba?' <span class="badge badge-amber" style="font-size:9px;vertical-align:middle">PRUEBA</span>':''}</td>
       <td><span class="badge ${t.tipo==='CALL'?'badge-green':'badge-red'}">${t.tipo}</span></td>
       <td>$${t.strike||'—'}</td>
       <td><span class="badge ${deltaClass(t.delta)}">Δ${t.delta||'—'}</span></td>
@@ -1685,7 +2434,7 @@ function renderHistorial() {
   }).join('');
 
   // Populate month filter
-  const months = [...new Set(trades.map(t=>t.fecha?.slice(0,7)).filter(Boolean))].sort().reverse();
+  const months = [...new Set(tradesVista().map(t=>t.fecha?.slice(0,7)).filter(Boolean))].sort().reverse();
   const mf = document.getElementById('filter-mes');
   const cur = mf.value;
   mf.innerHTML = '<option value="">Todo el tiempo</option>' + months.map(m=>`<option value="${m}" ${m===cur?'selected':''}>${m}</option>`).join('');
@@ -1706,6 +2455,15 @@ function openEdit(id) {
   const t   = trades.find(x=>x.id===id);
   if (!t) return;
   document.getElementById('edit-modal-body').innerHTML = `
+    <div class="form-row g2">
+      <div><label class="form-label">Cuenta</label>
+        <select class="form-control" id="em-modo">
+          <option value="paper" ${modoDe(t)==='paper'?'selected':''}>Paper money</option>
+          <option value="real"  ${modoDe(t)==='real' ?'selected':''}>Dinero real</option>
+        </select></div>
+      <div><label class="form-label">Prima referencia (opcional)</label>
+        <input class="form-control" id="em-prima-ref" type="number" value="${t.primaRef??''}" step="0.01" placeholder="1.60"></div>
+    </div>
     <div class="form-row g2">
       <div><label class="form-label">Estado</label>
         <select class="form-control" id="em-estado">
@@ -1741,6 +2499,11 @@ function openEdit(id) {
         <input class="form-control" id="em-mfe-delta" type="number" value="${t.mfeDelta??''}" step="0.01" min="0.05" max="0.95" placeholder="0.49" oninput="emCalcMfe('${t.tipo}',${t.prima},${t.contratos||1})"></div>
     </div>
     <div id="em-mfe-preview" style="margin-top:4px"></div>
+    <div class="form-row g2" style="margin-top:10px">
+      <div><label class="form-label">Precio SPY al salir</label>
+        <input class="form-control" id="em-spy-out" type="number" step="0.01" value="${t.spyExitPrice??''}" placeholder="745.80"></div>
+    </div>
+    ${regimenHtml('em-reg-', t)}
     <div style="margin:6px 0;display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="em-prueba" ${t.esPrueba?'checked':''} style="width:16px;height:16px;cursor:pointer">
       <label for="em-prueba" style="font-size:12px;color:var(--muted);cursor:pointer">Es trade de prueba (no cuenta para métricas de la estrategia)</label>
@@ -1911,6 +2674,10 @@ function emCalcPnl(primaIn, contratos) {
 function saveEditTrade() {
   const t = trades.find(x=>x.id===editingId);
   if (!t) return;
+  const reg = leerRegimen('em-reg-');
+  if (reg.error) { notify(reg.error); return; }   // se valida antes de tocar el trade
+  t.modo     = document.getElementById('em-modo').value === 'real' ? 'real' : 'paper';
+  t.primaRef = parseFloat(document.getElementById('em-prima-ref').value)||null;
   t.estado   = document.getElementById('em-estado').value;
   t.primaOut = parseFloat(document.getElementById('em-prima-out').value)||null;
   t.horaOut  = document.getElementById('em-hora-out').value;
@@ -1924,6 +2691,8 @@ function saveEditTrade() {
   t.spyEntryPrice = parseFloat(document.getElementById('em-spy-entry').value)||null;
   t.mfeSpyPrice   = parseFloat(document.getElementById('em-mfe-spy').value)||null;
   t.mfeDelta      = parseFloat(document.getElementById('em-mfe-delta').value)||null;
+  t.spyExitPrice  = parseFloat(document.getElementById('em-spy-out').value)||null;
+  Object.assign(t, reg.valores);
   if (t.spyEntryPrice && t.mfeSpyPrice && t.mfeDelta && t.prima) {
     const dirSign = t.tipo === 'PUT' ? -1 : 1;
     const movSpy  = (t.mfeSpyPrice - t.spyEntryPrice) * dirSign;
@@ -1973,6 +2742,7 @@ function updateCalc() {
     <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--muted);font-family:var(--mono)">
       Costo: <strong style="color:${overB?'var(--red)':'var(--text)'}">$${cost}</strong> · R:R 1:${rr} · ${overB?'⚠ excede 5%':'✓ ok'}
     </div>`;
+  updateMov();
   buildPnlChart(p, sl, tp);
   document.getElementById('breakeven-info').innerHTML = `
     <div class="oco-result" style="grid-template-columns:1fr 1fr 1fr">
@@ -2000,6 +2770,137 @@ function buildPnlChart(prima, sl, tp) {
   });
 }
 
+/* ═══════════════════════════════════════════════════
+   MOVIMIENTO DE SPY NECESARIO PARA TP Y SL
+   Aproximación de segundo orden de la prima (por acción):
+     cambio de prima ≈ delta·m + ½·gamma·m² − decaimiento
+   Se resuelve al revés: dado el objetivo en $ (TP o SL), ¿cuánto debe moverse SPY (m)?
+   Es una aproximación: vale para movimientos chicos (~1.5 pts o menos) y asume delta/gamma/theta constantes.
+═══════════════════════════════════════════════════ */
+// Movimiento a favor para ganar `objetivo` ($/acción).
+function resolverMovimiento(delta, gamma, objetivo, decay) {
+  const need = objetivo + decay;
+  if (gamma >= 1e-4) return (-delta + Math.sqrt(delta*delta + 2*gamma*need)) / gamma;
+  return need / delta;
+}
+// Movimiento en contra para perder `perdida` ($/acción). nota: '' | 'tiempo' (el decaimiento solo ya lo consume) | 'inalcanzable' (el modelo no llega).
+function resolverMovimientoContra(delta, gamma, perdida, decay) {
+  const R = perdida - decay;
+  if (R <= 0) return { d: 0, nota: 'tiempo' };
+  if (gamma >= 1e-4) {
+    const disc = delta*delta - 2*gamma*R;
+    if (disc < 0) return { d: null, nota: 'inalcanzable' };
+    return { d: (delta - Math.sqrt(disc)) / gamma, nota: '' };
+  }
+  return { d: R / delta, nota: '' };
+}
+
+function minutosAlCierreET() {
+  try {
+    const partes = new Intl.DateTimeFormat('en-US', { timeZone:'America/New_York', hour:'numeric', minute:'numeric', hour12:false, weekday:'short' }).formatToParts(new Date());
+    const get = t => (partes.find(x => x.type === t) || {}).value;
+    if (['Sat','Sun'].includes(get('weekday'))) return null;
+    const mins = (parseInt(get('hour')) % 24) * 60 + parseInt(get('minute'));
+    if (mins >= 9*60+30 && mins < 16*60) return 16*60 - mins;
+  } catch { /* sin Intl: se usa el valor por defecto */ }
+  return null;
+}
+function prefillMinCierre() {
+  const f = document.getElementById('calc-min-rest');
+  if (!f || (f.value !== '' && f.dataset.auto === '0')) return;
+  const m = minutosAlCierreET();
+  f.value = m !== null ? m : 330;
+  f.dataset.auto = '1';
+  f.title = m !== null ? 'Calculado con la hora actual de Nueva York' : 'Mercado cerrado: se asume una entrada hacia las 10:30 ET (330 min)';
+}
+
+function onDeltaSlider(v) {
+  updateDeltaViz(v);
+  const f = document.getElementById('calc-delta');
+  if (f) f.value = (parseInt(v) / 100).toFixed(2);
+  updateMov();
+}
+function onDeltaCampo() {
+  const d = parseFloat(document.getElementById('calc-delta').value);
+  if (Number.isFinite(d) && d >= 0.10 && d <= 0.80) {
+    const r = document.getElementById('delta-range');
+    r.value = Math.round(d * 100);
+    updateDeltaViz(r.value);
+  }
+  updateMov();
+}
+
+function updateMov() {
+  const el = document.getElementById('calc-mov-out');
+  if (!el) return;
+  const num = id => { const v = parseFloat(document.getElementById(id).value); return Number.isFinite(v) ? v : null; };
+  const p     = num('calc-prima') || 1.45;
+  const tp    = parseInt(document.getElementById('calc-tp').value) / 100;
+  const sl    = parseInt(document.getElementById('calc-sl').value) / 100;
+  const delta = num('calc-delta');
+  const gamma = Math.max(0, num('calc-gamma') || 0);
+  const theta = num('calc-theta');
+  const rest  = Math.max(1, num('calc-min-rest') || 330);
+  const hold  = Math.min(rest, Math.max(1, num('calc-min-hold') || 30));
+  const costo = Math.max(0, num('calc-costos') || 0) / 100;
+  const atr   = num('calc-atr');
+  const spy   = num('calc-spy');
+  const tipo  = document.getElementById('calc-tipo').value;
+
+  if (!delta || delta <= 0 || delta >= 1) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted)">Ingresa el delta de tu contrato (0.05–0.95) para estimar el movimiento.</div>';
+    return;
+  }
+  const decay = theta ? Math.abs(theta) * hold / rest : 0;   // theta de TOS es por día: se reparte linealmente en los minutos que faltan al cierre
+  const lecturas = [{ label: 'Solo delta', g: 0, d: 0 }];
+  if (gamma > 0) lecturas.push({ label: 'Delta + gamma', g: gamma, d: 0 });
+  if (decay > 0) lecturas.push({ label: gamma > 0 ? 'Delta + gamma + theta' : 'Delta + theta', g: gamma, d: decay });
+
+  const sgnTP = tipo === 'CALL' ? 1 : -1;
+  const celda = (d, nota, signo) => {
+    if (d === null) return '<span style="color:var(--muted);font-size:12px">fuera del modelo</span>';
+    const sub = [];
+    if (atr && atr > 0) sub.push((d / atr).toFixed(1) + ' ATR');
+    if (spy && spy > 0) sub.push('→ ' + (spy + signo * d).toFixed(2));
+    return `<div style="font-family:var(--mono);font-weight:600">${d.toFixed(2)} pts</div>`
+      + (nota === 'tiempo' ? '<div style="font-size:11px;color:var(--amber)">el tiempo ya lo consume</div>' : '')
+      + (sub.length ? `<div style="font-size:11px;color:var(--muted)">${sub.join(' · ')}</div>` : '');
+  };
+
+  let lejos = false;
+  const filas = lecturas.map(l => {
+    const up = resolverMovimiento(delta, l.g, p * tp, l.d);
+    const dn = resolverMovimientoContra(delta, l.g, p * sl, l.d);
+    if (up > 1.5 || (dn.d !== null && dn.d > 1.5)) lejos = true;
+    const ratio = (dn.d && dn.d > 0) ? (up / dn.d).toFixed(2) + '×' : '—';
+    return `<tr><td style="font-size:12px">${l.label}</td><td>${celda(up, '', sgnTP)}</td><td>${celda(dn.d, dn.nota, -sgnTP)}</td><td style="font-family:var(--mono)">${ratio}</td></tr>`;
+  }).join('');
+
+  const verbTP = tipo === 'CALL' ? 'sube' : 'baja', verbSL = tipo === 'CALL' ? 'baja' : 'sube';
+  let html = `<div style="overflow-x:auto"><table><thead><tr><th>Lectura</th><th>TP (${Math.round(tp*100)}%): SPY ${verbTP}</th><th>SL (${Math.round(sl*100)}%): SPY ${verbSL}</th><th>TP ÷ SL</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+
+  const notas = [];
+  if (decay > 0) notas.push(`Decaimiento por tiempo estimado: <strong style="color:var(--text)">$${decay.toFixed(2)}</strong> por acción en ${hold} min (theta repartido entre los ${rest} min que faltan al cierre; en la práctica se acelera hacia el cierre).`);
+  if (!(gamma > 0)) notas.push('Sin gamma el modelo ignora la aceleración: tiende a ver el TP más lejos y el SL más cerca de lo real.');
+  notas.push('<strong style="color:var(--text)">TP ÷ SL</strong> mayor a 1 significa que el TP está más lejos que el SL en puntos de SPY, aunque ambos sean el mismo % de la prima.');
+  if (lejos) notas.push('<span style="color:var(--amber)">Con movimientos mayores a ~1.5 pts la aproximación pierde fiabilidad (el gamma cambia con el precio). Úsalo como orden de magnitud.</span>');
+
+  const be0 = sl / (sl + tp) * 100, be1 = (sl + costo) / (sl + tp) * 100;
+  let eq = `Win rate de equilibrio: <strong style="color:var(--text)">${be0.toFixed(0)}%</strong> sin costos`;
+  if (costo > 0) eq += ` · <strong style="color:var(--text)">${be1.toFixed(0)}%</strong> con costos de ${(costo*100).toFixed(1).replace(/\.0$/,'')}% de la prima`;
+  notas.push(eq + '.');
+
+  const cl = closedTrades();
+  if (cl.length) {
+    const st = stats(cl), be = costo > 0 ? be1 : be0;
+    const exp = (st.wr * (p*tp - costo*p) - (1 - st.wr) * (p*sl + costo*p)) * 100;
+    const dif = st.wr * 100 - be;
+    notas.push(`Tu win rate (vista ${modoVista}, n=${cl.length}): <strong style="color:var(--text)">${(st.wr*100).toFixed(0)}%</strong>, ${Math.abs(dif).toFixed(0)} pts ${dif >= 0 ? 'por encima' : 'por debajo'} del equilibrio. Expectativa teórica con este SL/TP: <strong class="${exp>=0?'green':'red'}">${exp>=0?'+':'−'}$${Math.abs(exp).toFixed(0)}</strong> por contrato. ${cl.length < 30 ? 'Muestra pequeña, y si cambias el SL/TP el win rate también cambia.' : 'Si cambias el SL/TP el win rate también cambia.'}`);
+  }
+  html += `<div style="margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.7">${notas.map(n => `<div style="margin-bottom:4px">${n}</div>`).join('')}</div>`;
+  el.innerHTML = html;
+}
+
 function updateDeltaViz(v) {
   const pct = ((v-10)/70*100).toFixed(1);
   document.getElementById('delta-cur').style.left = pct + '%';
@@ -2023,7 +2924,7 @@ function updateDeltaViz(v) {
 ═══════════════════════════════════════════════════ */
 function showReportTab(id) {
   document.querySelectorAll('.tab').forEach((t,i) => {
-    const ids=['resumen','por-hora','por-mes','por-ticker','mfe','comparar'];
+    const ids=['resumen','por-hora','por-mes','por-ticker','mfe','paper-real','por-version','regimen','modelo','comparar'];
     t.classList.toggle('active', ids[i]===id);
   });
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -2033,12 +2934,16 @@ function showReportTab(id) {
   if (id==='por-mes')    renderReporteMes();
   if (id==='por-ticker') renderReporteTicker();
   if (id==='mfe')        renderReporteMfe();
+  if (id==='paper-real') renderReportePaperReal();
+  if (id==='por-version') renderReportePorVersion();
+  if (id==='regimen')     renderReporteRegimen();
+  if (id==='modelo')      renderReporteModelo();
   if (id==='comparar')   renderComparar();
 }
 
 function renderReportes() { renderReporteResumen(); populateComparadores(); }
 
-function closedTrades() { return trades.filter(t=>t.estado!=='abierto' && !t.esPrueba); }
+function closedTrades() { return tradesVista().filter(t=>t.estado!=='abierto' && !t.esPrueba); }
 
 function stats(list) {
   const wins   = list.filter(t=>t.pnl>0);
@@ -2054,7 +2959,7 @@ function stats(list) {
 function renderReporteResumen() {
   const ctx = document.getElementById('r-chart-equity').getContext('2d');
   if (rChartEquity) rChartEquity.destroy();
-  const sorted = [...trades].filter(t=>t.estado!=='abierto' && !t.esPrueba).sort((a,b)=>a.fecha>b.fecha?1:-1);
+  const sorted = [...closedTrades()].sort((a,b)=>a.fecha>b.fecha?1:-1);
   let run=BUDGET; const labs=['Inicio'], data=[run];
   sorted.forEach(t=>{ run+=(t.pnl||0); labs.push(fmtDate(t.fecha)); data.push(run); });
   rChartEquity = new Chart(ctx, { type:'line', data:{ labels:labs, datasets:[{ data, borderColor:CC.accent, backgroundColor:'rgba(200,240,96,.06)', fill:true, tension:.4, pointRadius:2, borderWidth:2 }] },
@@ -2243,8 +3148,78 @@ function renderReporteMfe() {
     }).join('') + '</tbody></table>';
 }
 
+// Comparativo Paper vs Real. Ignora modoVista: siempre calcula ambas cuentas. Excluye abiertos y pruebas.
+function renderReportePaperReal() {
+  const cerrados = m => trades.filter(t => t.estado!=='abierto' && !t.esPrueba && modoDe(t)===m);
+  const todosDe  = m => trades.filter(t => modoDe(t)===m);
+  const avgPct = arr => arr.length ? arr.reduce((a,t)=>a+((t.primaOut-t.prima)/t.prima*100),0)/arr.length : null;
+
+  const col = m => {
+    const l = cerrados(m), s = stats(l);
+    const sumW = l.filter(t=>t.pnl>0).reduce((a,t)=>a+t.pnl,0);
+    const sumL = Math.abs(l.filter(t=>t.pnl<0).reduce((a,t)=>a+t.pnl,0));
+    const pf = sumL ? sumW/sumL : (sumW ? Infinity : null);
+    const cnt = e => l.filter(t=>t.estado===e).length;
+    const slT = l.filter(t=>t.estado==='perdida'  && t.primaOut && t.prima);
+    const tpT = l.filter(t=>t.estado==='ganancia' && t.primaOut && t.prima);
+    const conScore = l.filter(t=>t.score!==undefined && t.score!==null);
+    const adher = conScore.length ? conScore.filter(t=>t.score>=4).length/conScore.length*100 : null;
+    const porDia = {};
+    todosDe(m).forEach(t => { if (t.fecha) porDia[t.fecha] = (porDia[t.fecha]||0)+1; });
+    const diasMulti = Object.values(porDia).filter(n=>n>1).length;
+    const cautela = l.filter(t => { if(!t.fecha) return false; const d=new Date(t.fecha+'T12:00:00').getDay(); return d===1||d===3||d===5; }).length;
+    const conRef = l.filter(t=>t.primaRef);
+    const slip = conRef.length ? conRef.reduce((a,t)=>a+(t.prima-t.primaRef),0)/conRef.length : null;
+    return { n:l.length, s, pf, tp:cnt('ganancia'), sl:cnt('perdida'), fz:cnt('forzado'), mn:cnt('manual'),
+             tpPct:avgPct(tpT), slPct:avgPct(slT), adher, diasMulti, cautela, slip, nSlip:conRef.length, nScore:conScore.length };
+  };
+  const P = col('paper'), R = col('real');
+  const pct = v => v===null ? '—' : (v>=0?'+':'')+v.toFixed(0)+'%';
+  const rows = [
+    ['Trades cerrados (sin pruebas)', c => c.n],
+    ['Win rate',                      c => (c.s.wr*100).toFixed(0)+'%'],
+    ['P&L neto',                      c => fmtMoney(c.s.pnl)],
+    ['Ganancia promedio',             c => c.s.wins ? fmtMoney(c.s.avgWin) : '—'],
+    ['Pérdida promedio',              c => c.s.losses ? fmtMoney(c.s.avgLoss) : '—'],
+    ['Expectativa por trade',         c => fmtMoney2(c.s.expect)],
+    ['Profit factor',                 c => c.pf===null ? '—' : c.pf===Infinity ? '∞' : c.pf.toFixed(2)],
+    ['Cierres TP / SL / forzado / manual', c => `${c.tp} / ${c.sl} / ${c.fz} / ${c.mn}`],
+    ['Ganancia promedio en TP (% de prima, objetivo +30%)', c => pct(c.tpPct)],
+    ['Pérdida promedio en SL (% de prima, objetivo −30%)',  c => pct(c.slPct)],
+    ['Trades con score ≥ 4',          c => c.adher===null ? '—' : c.adher.toFixed(0)+'% (de '+c.nScore+')'],
+    ['Trades en día de cautela (Lun/Mié/Vie)', c => `${c.cautela} de ${c.n}`],
+    ['Días con más de 1 trade',       c => c.diasMulti],
+    ['Slippage de entrada (prima − referencia)', c => c.slip===null ? '— (sin referencia)' : (c.slip>=0?'+':'-')+'$'+Math.abs(c.slip).toFixed(2)+' (n='+c.nSlip+')'],
+  ];
+  const cell = (c, fn) => (c.n || fn===rows[0][1]) ? fn(c) : '—';
+  document.getElementById('r-pr-table').innerHTML =
+    `<table><thead><tr><th>Métrica</th><th>PAPER</th><th style="color:var(--real)">REAL</th></tr></thead><tbody>` +
+    rows.map(([l,fn]) => `<tr><td>${l}</td><td style="font-family:var(--mono)">${cell(P,fn)}</td><td style="font-family:var(--mono)">${cell(R,fn)}</td></tr>`).join('') +
+    `</tbody></table>
+     <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Muestra: ${P.n} paper vs ${R.n} real. Con pocos trades por cuenta las diferencias pueden ser solo ruido; el slippage (positivo = pagaste más que la referencia) solo cuenta trades con prima de referencia.</div>`;
+
+  const serie = m => {
+    const l = [...cerrados(m)].sort((a,b) => a.fecha===b.fecha ? ((a.hora||'')>(b.hora||'')?1:-1) : (a.fecha>b.fecha?1:-1));
+    let run = BUDGET;
+    return [run, ...l.map(t => (run += (t.pnl||0)))];
+  };
+  const sp = serie('paper'), sr = serie('real');
+  const n = Math.max(sp.length, sr.length);
+  const labels = Array.from({length:n}, (_,i) => i===0 ? 'Inicio' : '#'+i);
+  if (rChartPR) rChartPR.destroy();
+  rChartPR = new Chart(document.getElementById('r-chart-pr').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Paper', data:sp, borderColor:CC.blue, backgroundColor:'transparent', tension:.3, pointRadius:2, borderWidth:2 },
+      { label:'Real',  data:sr, borderColor:'#c084fc', backgroundColor:'transparent', tension:.3, pointRadius:3, borderWidth:2 },
+    ]},
+    options:{ ...CHART_BASE, plugins:{ legend:{ display:true, labels:{color:CC.text,font:{size:10},boxWidth:10} } },
+      scales:{ x:{ticks:{color:CC.text,font:{size:10}},grid:{color:CC.grid}}, y:{ticks:{color:CC.text,font:{size:10},callback:v=>'$'+v},grid:{color:CC.grid}} } }
+  });
+}
+
 function populateComparadores() {
-  const months = [...new Set(trades.map(t=>t.fecha?.slice(0,7)).filter(Boolean))].sort().reverse();
+  const months = [...new Set(tradesVista().map(t=>t.fecha?.slice(0,7)).filter(Boolean))].sort().reverse();
   const opts = '<option value="">Seleccionar...</option>' + months.map(m=>`<option value="${m}">${m}</option>`).join('');
   document.getElementById('comp-a').innerHTML = opts;
   document.getElementById('comp-b').innerHTML = opts;
@@ -2278,14 +3253,17 @@ function renderComparar() {
    EXPORT
 ═══════════════════════════════════════════════════ */
 function exportData() {
-  const headers = ['Fecha','Hora entrada ET','Ticker','Tipo','Strike','Delta','Prima entrada','Prima salida','Contratos','RSI','BB Width/IV','Score','Estado','Hora cierre ET','P&L ($)','SPY entrada','SPY MFE','Delta MFE','Prima MFE est.','% camino a TP','Notas'];
+  const headers = ['Fecha','Cuenta','Versión estrategia','Hora entrada ET','Ticker','Tipo','Strike','Delta','Prima entrada','Prima salida','Contratos','RSI','BB Width/IV','Score','Estado','Hora cierre ET','P&L ($)','SPY entrada','SPY MFE','Delta MFE','Prima MFE est.','% camino a TP','SPY salida','ATR pts','ATR diario pts','Gap / ATR diario','Rango apertura / ATR diario','Cruces VWAP','Eficiencia','Tipo de mercado','Prima referencia','Notas'];
   const rows = trades.map(t => [
-    t.fecha, t.hora||'', t.ticker, t.tipo, t.strike||'', t.delta||'', t.prima,
+    t.fecha, modoDe(t), t.versionEstrategia||'', t.hora||'', t.ticker, t.tipo, t.strike||'', t.delta||'', t.prima,
     t.primaOut||'', t.contratos||1, t.rsi||'', t.iv||'', t.score!==undefined?t.score:'',
     t.estado, t.horaOut||'', t.pnl!==null?t.pnl:'',
     t.spyEntryPrice||'', t.mfeSpyPrice||'', t.mfeDelta||'',
     t.mfePrimaEstimada!==undefined&&t.mfePrimaEstimada!==null?t.mfePrimaEstimada.toFixed(2):'',
     t.pctHaciaTP!==undefined&&t.pctHaciaTP!==null?t.pctHaciaTP.toFixed(0):'',
+    t.spyExitPrice||'',
+    t.regAtr??'', t.regAtrDiario??'', t.regGap??'', t.regRangoAp??'', t.regCruces??'', t.regEfic??'', t.tipoMercado||'',
+    t.primaRef||'',
     t.notas||''
   ]);
   const csv = [headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
@@ -2398,8 +3376,13 @@ document.getElementById('f-fecha').value  = today();
 document.getElementById('f-ticker').value = 'SPY';
 const etInit = getETMinutes();
 document.getElementById('f-hora').value = `${String(etInit.h).padStart(2,'0')}:${String(etInit.m).padStart(2,'0')}`;
+prefillMinCierre();
 updateCalc();
 updateDeltaViz(46);
+setModoNuevo(modoNuevo);
+actualizarSegVista();
+actualizarBotonEstrategia();
+document.getElementById('f-regimen-block').innerHTML = regimenHtml('f-reg-', {});
 
 // Cerrar modales al clic fuera
 document.getElementById('edit-modal').addEventListener('click', e => {
@@ -2408,9 +3391,18 @@ document.getElementById('edit-modal').addEventListener('click', e => {
 document.getElementById('gh-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('gh-modal')) closeGHModal();
 });
+document.getElementById('est-edit-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('est-edit-modal')) closeEstEdit();
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const m = document.getElementById('est-edit-modal');
+  if (m.classList.contains('open')) closeEstEdit(); else cerrarEstrategia();
+});
 
 // Cargar desde GitHub (si hay config) y luego renderizar
 loadFromGitHub().then(() => renderDashboard());
+cargarEstrategiaGitHub();
 </script>
 </body>
 </html>
