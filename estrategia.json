@@ -1,0 +1,298 @@
+{
+  "version": 1,
+  "actualizado": "2026-10-13",
+  "items": [
+    {
+      "id": "pa-instr",
+      "seccion": "parametros",
+      "titulo": "Instrumento y plataformas",
+      "valor": "SPY, opciones 0DTE. Ejecución en Schwab/thinkorswim; análisis técnico en TradingView.",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pa-cap",
+      "seccion": "parametros",
+      "titulo": "Capital base y riesgo por trade",
+      "valor": "$2,800 · 5% por trade ($140).",
+      "estado": "vigente",
+      "donde": "app",
+      "nota": ""
+    },
+    {
+      "id": "pa-sltp",
+      "seccion": "parametros",
+      "titulo": "Stop Loss / Take Profit",
+      "valor": "30% / 30% sobre la prima (R:R 1:1).",
+      "estado": "vigente",
+      "donde": "app",
+      "nota": ""
+    },
+    {
+      "id": "pa-delta",
+      "seccion": "parametros",
+      "titulo": "Delta objetivo",
+      "valor": "0.45–0.50.",
+      "estado": "vigente",
+      "donde": "script+app",
+      "nota": ""
+    },
+    {
+      "id": "pa-prima",
+      "seccion": "parametros",
+      "titulo": "Rango de prima",
+      "valor": "$0.90–$1.79.",
+      "estado": "vigente",
+      "donde": "app",
+      "nota": ""
+    },
+    {
+      "id": "pa-contr",
+      "seccion": "parametros",
+      "titulo": "Contratos por trade",
+      "valor": "1.",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pa-ventana",
+      "seccion": "parametros",
+      "titulo": "Ventana de entrada",
+      "valor": "9:45–11:30 AM ET.",
+      "estado": "vigente",
+      "donde": "script+app",
+      "nota": ""
+    },
+    {
+      "id": "pa-caut",
+      "seccion": "parametros",
+      "titulo": "Días de cautela",
+      "valor": "Lunes (errático), miércoles (FOMC) y viernes (gamma). Hoy el script solo advierte.",
+      "estado": "validacion",
+      "donde": "script+app",
+      "nota": "Pendiente decidir si pasa de advertencia a exclusión dura."
+    },
+    {
+      "id": "ck-min",
+      "seccion": "checklist",
+      "titulo": "Score mínimo para operar",
+      "valor": "4/5 o más, leído en el Data Window de 15 min.",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "ck-1",
+      "seccion": "checklist",
+      "titulo": "1. Tendencia y VWAP",
+      "valor": "EMA 9 > EMA 21 y precio sobre VWAP para CALL; invertido para PUT. Timeframe 15 min.",
+      "estado": "vigente",
+      "donde": "script+app",
+      "nota": ""
+    },
+    {
+      "id": "ck-2",
+      "seccion": "checklist",
+      "titulo": "2. RSI 35–70",
+      "valor": "Timeframe 15 min, leído en el Data Window (no en 5 min).",
+      "estado": "vigente",
+      "donde": "script+app",
+      "nota": ""
+    },
+    {
+      "id": "ck-3",
+      "seccion": "checklist",
+      "titulo": "3. BB Width < 3.5% y sin expansión",
+      "valor": "El script marca expansión cuando el ancho sube frente a la vela anterior y supera su promedio de 5 velas.",
+      "estado": "validacion",
+      "donde": "script+app",
+      "nota": "Se cuestiona si es demasiado estricta (caso del 17 de julio: valor bajo pero bloqueado por expansión)."
+    },
+    {
+      "id": "ck-4",
+      "seccion": "checklist",
+      "titulo": "4. Entrada antes de las 11:30 AM ET",
+      "valor": "",
+      "estado": "vigente",
+      "donde": "script+app",
+      "nota": ""
+    },
+    {
+      "id": "ck-5",
+      "seccion": "checklist",
+      "titulo": "5. No es día de cautela",
+      "valor": "Lunes, miércoles o viernes cuentan como día de riesgo.",
+      "estado": "vigente",
+      "donde": "script+app",
+      "nota": ""
+    },
+    {
+      "id": "lc-dw",
+      "seccion": "lectura",
+      "titulo": "Leer siempre el Data Window",
+      "valor": "La tabla del overlay muestra el estado en vivo del momento de la captura, no el de la vela bajo el cursor.",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "lc-15",
+      "seccion": "lectura",
+      "titulo": "Prioridad del 15 min",
+      "valor": "Verificar primero el 15 min; el 1 min solo confirma. Si no coinciden, no operar y esperar otra ventana.",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "lc-rsi",
+      "seccion": "lectura",
+      "titulo": "RSI cerca del borde",
+      "valor": "A menos de ~5 puntos de 70 o de 35 (≥65 / ≤40) es señal de agotamiento, aunque el check diga OK.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "lc-bb",
+      "seccion": "lectura",
+      "titulo": "BB Width subiendo",
+      "valor": "Comparar con 2–3 velas atrás; si sube de forma sostenida es expansión real, no un pico aislado.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": "El script usa una definición más sensible (una sola vela de alza)."
+    },
+    {
+      "id": "lc-agot",
+      "seccion": "lectura",
+      "titulo": "Advertencia de agotamiento",
+      "valor": "RSI cerca del borde y BB Width subiendo a la vez: tratarlo como agotamiento aunque el score sea 4–5.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "lc-vwap",
+      "seccion": "lectura",
+      "titulo": "EMA contra VWAP",
+      "valor": "Confirmación fuerte: EMA 9/21 y precio vs VWAP apuntan igual. Si se contradicen es señal mixta y se salta esa ventana.",
+      "estado": "validacion",
+      "donde": "script+app",
+      "nota": "El script ya resta el punto de la condición 1 si se contradicen, pero no la marca como \"mixta\"."
+    },
+    {
+      "id": "lc-rsisos",
+      "seccion": "lectura",
+      "titulo": "RSI sostenido en extremo (15 min)",
+      "valor": "Con RSI sostenido en sobreventa o sobrecompra extrema no se opera. Distinguir una vela anómala de una condición sostenida antes de cambiar esta regla.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": "Origen: sesión del 23 de julio, sin trade por RSI sostenido en sobreventa extrema."
+    },
+    {
+      "id": "di-1dia",
+      "seccion": "disciplina",
+      "titulo": "Un trade por día",
+      "valor": "Si el primero pierde, no abrir un segundo para recuperar.",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "di-prueba",
+      "seccion": "disciplina",
+      "titulo": "Trades de prueba",
+      "valor": "Todo trade fuera de reglas se marca como prueba y queda fuera de las métricas.",
+      "estado": "vigente",
+      "donde": "app",
+      "nota": ""
+    },
+    {
+      "id": "di-cuenta",
+      "seccion": "disciplina",
+      "titulo": "Cuenta de cada trade",
+      "valor": "Registrar cada trade como paper o real para poder comparar ambas etapas.",
+      "estado": "vigente",
+      "donde": "app",
+      "nota": ""
+    },
+    {
+      "id": "di-pase",
+      "seccion": "disciplina",
+      "titulo": "Criterios para pasar de paper a real",
+      "valor": "Por definir: número de trades bajo las reglas vigentes, expectativa positiva, adherencia mínima y un límite de pérdida para pausar.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pt-A",
+      "seccion": "patrones",
+      "titulo": "Patrón A — conflicto 1 min vs 15 min",
+      "valor": "Decisión tomada en el 1 min en contra de la estructura de 15 min (13 y 17 de julio).",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pt-B",
+      "seccion": "patrones",
+      "titulo": "Patrón B — RSI en el borde y/o BB Width expandiendo",
+      "valor": "En 15 min, sin reflejarse al leer el score del 1 min (15 de julio).",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pt-C",
+      "seccion": "patrones",
+      "titulo": "Patrón C — EMA contra VWAP",
+      "valor": "En conflicto dentro del mismo 15 min (15 y 17 de julio).",
+      "estado": "vigente",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pe-67",
+      "seccion": "pendientes",
+      "titulo": "Condiciones 6 y 7 en el script",
+      "valor": "Agotamiento (RSI cerca del borde + BB subiendo) y 3 velas de tendencia sostenida. Hoy se verifican a mano.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pe-opn",
+      "seccion": "pendientes",
+      "titulo": "Registrar \"oportunidad no tomada\"",
+      "valor": "Categoría para acumular casos límite antes de revisar el filtro de RSI en 15 min. La app todavía no la tiene.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": ""
+    },
+    {
+      "id": "pe-nofill",
+      "seccion": "pendientes",
+      "titulo": "Órdenes sin fill",
+      "valor": "La app no tiene un estado para órdenes que no se llenaron.",
+      "estado": "validacion",
+      "donde": "manual",
+      "nota": ""
+    }
+  ],
+  "historial": [
+    {
+      "version": 1,
+      "ts": "2026-10-13T03:16:11.556Z",
+      "fecha": "2026-10-13",
+      "accion": "alta",
+      "itemId": null,
+      "titulo": "Carga inicial",
+      "cambios": [],
+      "motivo": "Consolidar en un solo lugar las reglas que estaban repartidas entre el script, la app, el README y las notas.",
+      "evidencia": ""
+    }
+  ]
+}
